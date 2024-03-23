@@ -30,6 +30,6 @@ RUN composer install --ignore-platform-reqs
 RUN chown -R www-data:www-data /var/www/html/var
 
 # die zu Synfony passende Configuration
-COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf
+COPY docker/apache/default-config.conf /etc/apache2/sites-available/default-config.conf
 
-EXPOSE 8001
+EXPOSE 8000
