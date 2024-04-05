@@ -4,12 +4,13 @@ ARG DOCKER_USERID="1000"
 
 # Install required dependencies
 RUN apt-get update \
-    && apt-get install -y libmcrypt4 libmcrypt-dev zlib1g-dev libzip-dev \
-    && apt-get install -y libmemcached-dev memcached libmemcached11
-
+    && apt-get install -y zlib1g-dev libzip-dev libmcrypt-dev libmemcached-dev memcached \
+    && apt-get install -y default-mysql-client \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install required PHP extensions
-RUN docker-php-ext-install pdo zip
+RUN docker-php-ext-install pdo mysqli pdo_mysql zip
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

@@ -2,14 +2,15 @@ version: '3'
 
 services:
 ###> doctrine/doctrine-bundle ###
-  database:
+  furnics-database:
     ports:
       - "5432"
 ###< doctrine/doctrine-bundle ###
 
 ###> symfony/mailer ###
-  mailer:
+  furnics-mailer:
     image: axllent/mailpit
+    container_name: furnics-mailer
     ports:
       - "1025"
       - "8025"
