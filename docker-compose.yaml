@@ -1,0 +1,71 @@
+version: '3'
+
+networks:
+  furnics-project:
+    #      name: 50_default
+    driver: bridge
+
+services:
+
+  furnics-project:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: furnics-project
+    networks:
+      - furnics-project
+    volumes:
+      - '.:/var/www/html'
+      - '/mnt/var:/mnt/var'
+    ports:
+      - "8094:80"
+
+  furnics-php:
+    build:
+      context: .
+      dockerfile: ./php_helper/Dockerfile
+    container_name: furnics-php
+    volumes:
+      - .:/opt/project/furnics
+      - /mnt/var:/mnt/var
+      - /etc/cron.d/:/etc/cron.d/
+
+###> doctrine/doctrine-bundle ###
+  furnics-database:
+    image: mysql:${MYSQL_VERSION:-latest}
+    container_name: furnics-mysql-dwh
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    environment:
+      MYSQL_DATABASE: "furnicsApp"
+      MYSQL_USER: "furnicsUser"
+      MYSQL_PASSWORD: "123"
+      MYSQL_ROOT_PASSWORD: "root"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "--silent" ]
+    ports:
+      - "3308:3306"
+    volumes:
+      - furnics_dwh:/var/lib/mysql
+    networks:
+      - furnics-project
+
+  furnics-phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: furnics-phpmyadmin
+    environment:
+      MYSQL_ROOT_PASSWORD: Kimpa
+      MYSQL_DATABASE: furnicsApp
+      MYSQL_USER: furnicsUser
+      MYSQL_PASSWORD: 123
+      PMA_HOST: furnics-database
+    restart: always
+    networks:
+      - furnics-project
+    ports:
+      - 8081:80
+
+volumes:
+###> doctrine/doctrine-bundle ###
+  furnics_dwh:
+###< doctrine/doctrine-bundle ###

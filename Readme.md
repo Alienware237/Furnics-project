@@ -18,7 +18,7 @@
 - [ ] Install required Package 
 - composer update
 - composer install
-- php bin/console
+- php bin/console 
 
 
 ## Running the Application
