@@ -15,12 +15,15 @@
 - [ ] Remove deprecated class
 - Comment the import of the class "SensioFrameworkExtraBundle" in config/bundles.php
 
-- [ ] Install required Package 
-- composer update
-- composer install
-- php bin/console 
-
 
 ## Running the Application
 
+- docker compose up -d
+<!-- oder -->
 - symfony server:start
+<!-- Go in the App container with the  Command: -->
+- docker exec -it furnics-project /bin/bash
+<!-- Install Composer manually because Composer have not genarate the vendor file by starting the container with Dockerfile -->
+- composer install
+<!-- Open the browser on following link -->
+- http://localhost:8094/index.php/index
