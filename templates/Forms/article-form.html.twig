@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <title>Edit Product Form</title>
+    <link rel="stylesheet" type="text/css" href="{{ asset('style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/article-form.scss') }}">
+    <h1>Create new Product</h1>
+
+    <div class="container">
+        {{ form_start(form, { 'attr': { 'id': 'article-form' } }) }}
+
+        <div>
+            {{ form_label(form.articleName) }}
+            {{ form_widget(form.articleName) }}
+            {{ form_errors(form.articleName) }}
+        </div>
+
+        <div>
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+        </div>
+
+        <div>
+            {{ form_label(form.articlePrice) }}
+            {{ form_widget(form.articlePrice) }}
+            {{ form_errors(form.articlePrice) }}
+        </div>
+
+        <div>
+            {{ form_label(form.articleCategory) }}
+            {{ form_widget(form.articleCategory) }}
+            {{ form_errors(form.articleCategory) }}
+        </div>
+
+        <div>
+            {{ form_label(form.numberInStock) }}
+            {{ form_widget(form.numberInStock) }}
+            {{ form_errors(form.numberInStock) }}
+        </div>
+
+        <div>
+            <div id="size-container">
+                {% for sizeAndQuantity in form.sizeAndQuantities %}
+                    <div>
+                        {{ form_row(sizeAndQuantity.size) }}
+                        {{ form_row(sizeAndQuantity.quantity) }}
+                    </div>
+                {% endfor %}
+                <button id="add-size" type="button">Add Size</button>
+                <button id="remove-size" type="button">Remove Last Size</button>
+                {{ form_errors(form.sizeAndQuantities) }}
+            </div>
+        </div>
+
+        <div id="drop-zone" class="drop-zone">
+            <p>Drag & drop images here or click to select</p>
+            {{ form_widget(form.articleImages) }}
+            {{ form_errors(form.articleImages) }}
+        </div>
+
+        <div>
+            <button type="submit">Submit</button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+
+    <script src="{{ asset('js/article-form.js') }}" type="text/javascript"></script>
+{% endblock %}

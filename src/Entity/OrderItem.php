@@ -13,7 +13,7 @@ class OrderItem
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $orderItemId = null;
 
     #[ORM\ManyToOne(targetEntity: Order::class, cascade: ["persist", "remove", "update"])]
@@ -28,7 +28,7 @@ class OrderItem
     #[ORM\Column(type: 'integer')]
     private int $quantity;
 
-    #[ORM\Column(type: 'float')]
+    #[ORM\Column(type: 'float', nullable: false)]
     private float $unitPrice;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]

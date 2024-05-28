@@ -34,7 +34,6 @@ services:
   furnics-database:
     image: mysql:${MYSQL_VERSION:-latest}
     container_name: furnics-mysql-dwh
-    command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       MYSQL_DATABASE: "furnicsApp"

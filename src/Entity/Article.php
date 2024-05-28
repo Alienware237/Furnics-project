@@ -8,6 +8,8 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use DoctrineExtensions\Query\Mysql\Date;
 use okpt\furnics\project\Repository\ArticleRepository;
+//use phpDocumentor\Reflection\Types\Collection;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 
 #[ORM\Entity(repositoryClass: ArticleRepository::class)]
 #[ApiResource]
@@ -15,23 +17,27 @@ class Article
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $articleId = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type:'string', length: 255)]
     private ?string $articleName = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $description = null;
+    #[ORM\Column(type:'string', length: 255)]
+    private ?string $description;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
-    private ?string $articlePrice = null;
+    private ?int $articlePrice = null;
 
-    #[ORM\Column]
-    private ?int $numberInStock = null;
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private ?int $numberInStock;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type:'string', length: 255, nullable: true)]
     private ?string $articleCategory = null;
+
+    private array $sizeAndQuantities;
+
+    private string $categoryDescription;
 
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
     private ?array $articleImages = null;
@@ -41,6 +47,7 @@ class Article
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private DateTime $updatedAt;
+
 
     public function getArticleId(): ?int
     {
@@ -130,17 +137,37 @@ class Article
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTime $createdDate): static {
+    public function setCreatedAt(DateTime $createdDate): void
+    {
         $this->createdAt = $createdDate;
-        return $this;
     }
 
     public function getUpdatedAt(): DateTime {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTime $updatedDate): static {
-        $this->createdAt = $updatedDate;
+    public function setUpdatedAt(DateTime $updatedDate): void
+    {
+        $this->updatedAt = $updatedDate;
+    }
+
+    public function getSizeAndQuantities(): array
+    {
+        return $this->sizeAndQuantities;
+    }
+
+    public function setSizeAndQuantities(array $sizeAndQuantities): self
+    {
+        $this->sizeAndQuantities = $sizeAndQuantities;
         return $this;
+    }
+
+    public function getCategoryDescription(): string {
+        return $this->categoryDescription;
+    }
+
+    public function setCategoryDescription(string $categoryDescription): void
+    {
+        $this->categoryDescription = $categoryDescription;
     }
 }

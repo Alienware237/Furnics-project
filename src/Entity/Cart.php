@@ -14,11 +14,11 @@ class Cart
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $cartId = null;
 
     #[ORM\OneToOne(mappedBy: Cart::class, targetEntity: User::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false)]
     #[ORM\JoinColumn(nullable: false)]
     private int $userId;
 

@@ -25,5 +25,12 @@
 - docker exec -it furnics-project /bin/bash
 <!-- Install Composer manually because Composer have not genarate the vendor file by starting the container with Dockerfile -->
 - composer install
+<!-- Install vim to edit the php-ini file -->
+- apt-get install vim
+
+<!-- Damit der Adminn Bilder uploaden kann ist es notwendig Directory Permissions und Directory Ownership zu geben -->
+
+<!-- create the database schema by running -->
+- php bin/console doctrine:schema:create
 <!-- Open the browser on following link -->
 - http://localhost:8094/index.php/index
