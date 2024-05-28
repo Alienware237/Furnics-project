@@ -29,9 +29,6 @@ class Article
     #[ORM\Column(type: Types::DECIMAL, precision: 10, scale: 2)]
     private ?int $articlePrice = null;
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?int $numberInStock;
-
     #[ORM\Column(type:'string', length: 255, nullable: true)]
     private ?string $articleCategory = null;
 
@@ -39,8 +36,8 @@ class Article
 
     private string $categoryDescription;
 
-    #[ORM\Column(type: Types::ARRAY, nullable: true)]
-    private ?array $articleImages = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $articleImages = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
     private DateTime $createdAt;
@@ -97,18 +94,6 @@ class Article
         return $this;
     }
 
-    public function getNumberInStock(): ?int
-    {
-        return $this->numberInStock;
-    }
-
-    public function setNumberInStock(int $numberInStock): static
-    {
-        $this->numberInStock = $numberInStock;
-
-        return $this;
-    }
-
     public function getArticleCategory(): ?string
     {
         return $this->articleCategory;
@@ -121,12 +106,12 @@ class Article
         return $this;
     }
 
-    public function getArticleImages(): ?array
+    public function getArticleImages(): ?string
     {
         return $this->articleImages;
     }
 
-    public function setArticleImages(?array $articleImages): static
+    public function setArticleImages(?string $articleImages): static
     {
         $this->articleImages = $articleImages;
 
