@@ -13,20 +13,20 @@ class CartItem
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $cartItemId = null;
 
     #[ORM\ManyToOne(targetEntity: Cart::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false)]
     #[ORM\JoinColumn(nullable: false)]
     private int $cartId;
 
     #[ORM\OneToOne(targetEntity: Article::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false)]
     #[ORM\JoinColumn(nullable: false)]
     private int $articleId;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false)]
     private int $quantity;
 
     #[ORM\Column(type: 'string', length: 255)]

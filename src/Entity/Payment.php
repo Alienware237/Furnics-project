@@ -13,7 +13,7 @@ class Payment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private int $paymentId;
 
     #[ORM\Column(type: 'datetime')]
@@ -22,7 +22,7 @@ class Payment
     #[ORM\Column(type: 'string', length: 255)]
     private string $paymentArt;
 
-    #[ORM\Column(type: 'float')]
+    #[ORM\Column(type: 'float', nullable: false)]
     private float $amount;
 
     #[ORM\OneToOne(targetEntity: Order::class, cascade: ["persist", "remove", "update"])]

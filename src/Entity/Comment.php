@@ -14,7 +14,7 @@ class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $commentId = null;
 
     #[ORM\OneToOne(targetEntity: User::class, cascade: ["persist", "remove", "update"])]

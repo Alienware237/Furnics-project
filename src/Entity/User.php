@@ -14,7 +14,7 @@ class User implements UserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $userId = null;
 
     #[ORM\Column(type: 'string', length: 255)]
