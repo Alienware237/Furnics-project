@@ -33,12 +33,7 @@ class ArticleManager
         $this->entityManager->flush();
     }
 
-    public function updateArticle(Article $article, string $name, string $description, string $price, string $category, $image): void {
-        $article->setArticleName($name);
-        $article->setDescription($description);
-        $article->setArticlePrice($price);
-        $article->setArticleCategory($category);
-        $article->setArticleImages($image);
+    public function updateArticle(Article $article): void {
         $article->setUpdatedAt(new \DateTime());
         $this->entityManager->persist($article);
         $this->entityManager->flush();

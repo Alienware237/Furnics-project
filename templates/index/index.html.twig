@@ -5,6 +5,11 @@
     {% block stylesheets %}
 
     {% endblock %}
+    {% block javascripts %}
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    {% endblock %}
 {% endblock %}
 
 {% block body %}
@@ -106,6 +111,7 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link me-4" href="#about-us">About Us</a>
+                                <!--<p>{{ user.email }}</p>-->
                             </li>
                             <li class="nav-item dropdown me-4">
                                 <a class="nav-link dropdown-toggle" href="#" id="dropdownPages" data-bs-toggle="dropdown"
@@ -182,11 +188,12 @@
                                             </svg>
                                         </li>
                                         <li class="pe-3">
-                                            <a href="#">
-                                                <svg class="user" width="18" height="18">
+                                            <a>
+                                                <svg class="user" width="18" height="18" data-toggle="modal" data-target="#exampleModal">
                                                     <use xlink:href="#user"></use>
                                                 </svg>
                                             </a>
+                                            {{ user.email }}
                                         </li>
                                         <li>
                                             <a href="cart.html">
@@ -204,6 +211,25 @@
             </div>
         </nav>
     </header>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {% if user.email %}
+                    <form method="post" action="{{ path('app_logout') }}" style="display: inline;">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('logout') }}">
+                        <button type="submit" class="btn  btn-secondary" style="width: 100%;">Logout</button>
+                    </form>
+                {% else %}
+                    {% include 'security/login.html.twig' with {'form': form, 'error': error} %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
 
     <section id="billboard" class="overflow-hidden">
         <div class="swiper main-swiper">
