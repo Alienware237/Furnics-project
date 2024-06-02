@@ -32,6 +32,11 @@ services:
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
+
+    okpt\furnics\project\EventListener\CartAddListener:
+        tags:
+            - { name: 'kernel.event_listener', event: 'cart.add', method: 'onCartAddEvent' }
+
     okpt\furnics\project\Services\Security\AuthenticationService:
         arguments:
             $entityManager: '@okpt\furnics\project\Services\UserManager'

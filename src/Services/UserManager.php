@@ -9,11 +9,13 @@ use Psr\Log\LoggerInterface;
 class UserManager {
 
     private $entityManager;
+    private $cartManager;
     private $logger;
 
-    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, CartManager $cartManager)
     {
         $this->entityManager = $entityManager;
+        $this->cartManager = $cartManager;
         $this->logger = $logger;
     }
 
@@ -40,7 +42,7 @@ class UserManager {
         $this->entityManager->persist($user);
         $this->entityManager->flush();
     }
-    public function createUser(User $user): void
+    public function createUser(User $user): User
     {
         $user->setRole(2);
         $user->setCreatedAt(new \DateTime());
@@ -49,6 +51,9 @@ class UserManager {
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
+
+        $this->cartManager->createCart($user->getUserId());
+        return $user;
     }
 
     public function updateUser(User $user): void {

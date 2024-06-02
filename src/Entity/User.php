@@ -58,10 +58,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $cookie = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $created_at;
+    private $created_at;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $updated_at;
+    private $updated_at;
 
 
     public function getUserId(): ?int
@@ -248,20 +248,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = null;
     }
 
-    public function getCreatedAt(): DateTime {
+    public function getCreatedAt(): \DateTimeInterface {
         return $this->created_at;
     }
 
-    public function setCreatedAt(DateTime $created_at): static {
+    public function setCreatedAt(\DateTimeInterface $created_at): static {
         $this->created_at = $created_at;
         return $this;
     }
 
-    public function getUpdatedAt(): DateTime {
+    public function getUpdatedAt(): \DateTimeInterface {
         return $this->updated_at;
     }
 
-    public function setUpdatedAt(DateTime $updated_at): static {
+    public function setUpdatedAt(\DateTimeInterface $updated_at): static {
         $this->updated_at = $updated_at;
         return $this;
     }

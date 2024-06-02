@@ -7,6 +7,8 @@ use okpt\furnics\project\Entity\Article;
 use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Form\LoginType;
 use okpt\furnics\project\Services\ArticleManager;
+use okpt\furnics\project\Services\CartItemManager;
+use okpt\furnics\project\Services\CartManager;
 use okpt\furnics\project\Services\Security\AuthenticationService;
 use okpt\furnics\project\Services\UserManager;
 use Psr\Log\LoggerInterface;
@@ -21,13 +23,17 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 class IndexController extends AbstractController
 {
     private ArticleManager $articleManager;
+    private CartManager $cartManager;
+    private CartItemManager $cartItemManager;
     private $entityManager;
     private $authenticationService;
     private $logger;
 
-    public function __construct(ArticleManager $entityManager, UserManager $userManager, AuthenticationService $authenticationService, LoggerInterface $logger)
+    public function __construct(ArticleManager $entityManager, UserManager $userManager, CartManager $cartManager, CartItemManager $cartItemManager, AuthenticationService $authenticationService, LoggerInterface $logger)
     {
         $this->articleManager = $entityManager;
+        $this->cartManager = $cartManager;
+        $this->cartItemManager = $cartItemManager;
         $this->entityManager = $userManager;
         $this->authenticationService = $authenticationService;
         $this->logger = $logger;
@@ -76,11 +82,18 @@ class IndexController extends AbstractController
                 }
             }
         }
+        $cart = $this->cartManager->getCart($user->getUserId());
+        if (is_array($cart)) {
+            $cart = $cart[0];
+        }
+        $allCartItems = $this->cartItemManager->getCartItemByCartId($cart->getCartId());
         //print_r($user);
         return $this->render('index/index.html.twig', [
             'controller_name' => 'IndexController',
             'articles' => $allArticles,
             'user' => $user,
+            'cart' => $cart,
+            'cartItems' => $allCartItems,
             'form' => $form->createView(),
             'error' => $error,
         ]);
