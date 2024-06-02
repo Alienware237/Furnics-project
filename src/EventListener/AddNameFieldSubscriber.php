@@ -1,11 +1,10 @@
 <?php
 
 // src/Form/EventListener/AddNameFieldSubscriber.php
-namespace  okpt\furnics\project\Form\EventListener;
+namespace  okpt\furnics\project\EventListener;
 
 use okpt\furnics\project\Types\SizeAndQuantityType;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 

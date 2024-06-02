@@ -6,11 +6,12 @@ use ApiPlatform\Metadata\ApiResource;
 use DateTime;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity]
 #[ApiResource]
-class User implements UserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -57,10 +58,10 @@ class User implements UserInterface
     private ?string $cookie = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $createdAt;
+    private $created_at;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $updatedAt;
+    private $updated_at;
 
 
     public function getUserId(): ?int
@@ -247,26 +248,47 @@ class User implements UserInterface
         $this->password = null;
     }
 
-    public function getCreatedAt(): DateTime {
-        return $this->createdAt;
+    public function getCreatedAt(): \DateTimeInterface {
+        return $this->created_at;
     }
 
-    public function setCreatedAt(DateTime $createdDate): static {
-        $this->createdAt = $createdDate;
+    public function setCreatedAt(\DateTimeInterface $created_at): static {
+        $this->created_at = $created_at;
         return $this;
     }
 
-    public function getUpdatedAt(): DateTime {
-        return $this->updatedAt;
+    public function getUpdatedAt(): \DateTimeInterface {
+        return $this->updated_at;
     }
 
-    public function setUpdatedAt(DateTime $updatedDate): static {
-        $this->createdAt = $updatedDate;
+    public function setUpdatedAt(\DateTimeInterface $updated_at): static {
+        $this->updated_at = $updated_at;
         return $this;
+    }
+
+    public function signIn($user, $remember = false)
+    {
+        $this->setAuthenticated(true);
+        $this->setAttribute('user_id', $user->getId());
+
+        if ($remember) {
+            $rememberKey = bin2hex(random_bytes(16));
+            $user->setRememberKey($rememberKey);
+            $this->save();
+
+            $value = base64_encode(serialize([$rememberKey, $user->getUsername()]));
+            sfContext::getInstance()->getResponse()->setCookie('MyWebSite', $value, time() + 3600 * 24 * 15, '/');
+        }
+    }
+
+    public function signOut()
+    {
+        $this->setAuthenticated(false);
+        sfContext::getInstance()->getResponse()->setCookie('MyWebSite', '', time() - 3600, '/');
     }
 
     public function getUserIdentifier(): string
     {
-        // TODO: Implement getUserIdentifier() method.
+        return $this->email;
     }
 }

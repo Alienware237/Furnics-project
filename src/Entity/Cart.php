@@ -58,7 +58,7 @@ class Cart
     }
 
     public function setUpdatedAt(DateTime $updatedDate): static {
-        $this->createdAt = $updatedDate;
+        $this->updatedAt = $updatedDate;
         return $this;
     }
 

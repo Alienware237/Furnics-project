@@ -3,7 +3,6 @@
 namespace okpt\furnics\project\Form;
 
 use okpt\furnics\project\Entity\Article;
-use okpt\furnics\project\Form\EventListener\AddNameFieldSubscriber;
 use okpt\furnics\project\Types\SizeAndQuantityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
@@ -12,8 +11,6 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
-use Symfony\UX\Dropzone\Form\DropzoneType;
 
 class ArticleType extends AbstractType
 {
