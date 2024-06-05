@@ -86,7 +86,7 @@ class IndexController extends AbstractController
         if (is_array($cart)) {
             $cart = $cart[0];
         }
-        $allCartItems = $this->cartItemManager->getCartItemByCartId($cart->getCartId());
+        $allCartItems = $this->cartManager->getAllCartArticle($cart->getCartId());
         //print_r($user);
         return $this->render('index/index.html.twig', [
             'controller_name' => 'IndexController',

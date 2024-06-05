@@ -3,7 +3,7 @@ Theme Name: Ministore
 Theme URI: 
 Author: 
 Author URI: 
-Description: Ministore is specially designed product packaged for Ministore by Moksha.
+Description: Ministore  by Kevin Piam.
 Version: 
 */
 
@@ -1082,4 +1082,36 @@ h5 {
 .pagination .page-item a.page-link:focus {
   background-color: var(--bs-primary);
   color: var(--bs-light);
+}
+
+.site-blocks-table {
+  overflow: auto;
+  .product-thumbnail {
+    width: 200px;
+  }
+  thead {
+    th {
+      padding: 30px;
+      text-align: center;
+      border-width: 1px!important;
+      vertical-align: middle;
+      color: $gray-900;
+      font-size: 18px;
+    }
+  }
+  td {
+    padding: 20px;
+    text-align: center;
+    vertical-align: middle;
+    color: $gray-900;
+  }
+  tbody {
+    tr {
+      &:first-child {
+        td {
+          border-top: 1px solid $primary!important;
+        }
+      }
+    }
+  }
 }

@@ -30,6 +30,7 @@ final class CartAddListener
     public function onCartAddEvent($event): void
     {
         $this->logger->info('The event are successfully Calling! '. $event->getArticleId());
+        $this->logger->info('Event listener triggered for article ' . $event->getArticleId());
         $articleId = $event->getArticleId();
         $userEmail = $event->getUserEmail();
 
