@@ -33,9 +33,9 @@ services:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
 
 
-    okpt\furnics\project\EventListener\CartAddListener:
-        tags:
-            - { name: 'kernel.event_listener', event: 'cart.add', method: 'onCartAddEvent' }
+    # okpt\furnics\project\EventListener\CartAddListener:
+    #    tags:
+    #        - { name: 'kernel.event_listener', event: 'cart.add', method: 'onCartAddEvent' }
 
     okpt\furnics\project\Services\Security\AuthenticationService:
         arguments:
@@ -51,5 +51,9 @@ services:
             - '@security.user_providers'
         tags:
             - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+    okpt\furnics\project\Controller\CartController:
+        arguments:
+            $csrfTokenManager: '@security.csrf.token_manager'
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

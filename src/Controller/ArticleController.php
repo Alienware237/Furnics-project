@@ -2,7 +2,12 @@
 
 namespace okpt\furnics\project\Controller;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\Article;
+use okpt\furnics\project\Entity\Cart;
+use okpt\furnics\project\Entity\CartItem;
+use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Form\ArticleType;
 use okpt\furnics\project\Services\ArticleManager;
 use PhpParser\Node\Scalar\MagicConst\Dir;
@@ -21,16 +26,20 @@ class ArticleController extends AbstractController
 {
 
     private LoggerInterface $logger;
+    private $articleManager;
+    private $entityManager;
 
-    public function __construct(LoggerInterface $logger)
+    public function __construct(LoggerInterface $logger, ArticleManager $articleManager, EntityManagerInterface $entityManager)
     {
         $this->logger = $logger;
+        $this->articleManager = $articleManager;
+        $this->entityManager = $entityManager;
     }
 
     /**
      * @Route("/product/create", name="create_product")
      */
-    public function createProduct(ArticleManager $articleManager): Response
+    public function createProduct(): Response
     {
         $articleDetail1 = [
             'description' => 'Article Description 2 for Test',
@@ -215,6 +224,77 @@ class ArticleController extends AbstractController
         } else {
             return new Response('Failed to delete article', 500); // 500 is the status code for internal server error
         }
+    }
+
+    #[Route('/update-article-quantity', name: 'update_article_quantity', methods: ['POST'])]
+    public function updateArticleQuantity(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $this->logger->debug(json_encode($data));
+        //print_r($data);
+        $articleId = $data['articleId'];
+        $action = $data['action'];
+
+        $this->logger->debug('$data[articleId]: ' . $articleId);
+
+        $userEmail = $this->getUser()->getEmail();
+
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
+
+        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['userId' => $user->getUserId()]);
+
+        if (is_array($cart)) {
+            $cart = $cart[0];
+        }
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['cartId' => $cart->getCartId(), 'articleId' => $articleId]);
+
+        if ($cartItem) {
+            if ($action === 'increase') {
+                $cartItem->setQuantity($cartItem->getQuantity() + 1);
+            } else {
+                $cartItem->setQuantity(max(0, $cartItem->getQuantity() - 1));
+            }
+            $this->entityManager->persist($cartItem);
+            $this->entityManager->flush();
+
+            return new JsonResponse([
+                'success' => true,
+                'newQuantity' => $cartItem->getQuantity()
+            ]);
+        }
+
+        return new JsonResponse(['success' => false]);
+    }
+
+    #[Route('/remove-article', name: 'remove_article', methods: ['POST'])]
+    public function removeArticle(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $articleId = $data['articleId'];
+
+        $userEmail = $this->getUser()->getUserIdentifier();
+
+        //print_r($userEmail);
+
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
+
+
+        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['userId' => $user->getUserId()]);
+
+        if (is_array($cart)) {
+            $cart = $cart[0];
+        }
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['cartId' => $cart->getCartId(), 'articleId' => $articleId]);
+
+        // Fetch the article and remove it
+        if ($cartItem) {
+            $this->entityManager->remove($cartItem);
+            $this->entityManager->flush();
+
+            return new JsonResponse(['success' => true]);
+        }
+
+        return new JsonResponse(['success' => false]);
     }
 
     private function removeArticleFromArray(Article $deletedArticle): void

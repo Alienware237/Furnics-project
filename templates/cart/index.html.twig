@@ -8,12 +8,12 @@
 {% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+{% block javascripts %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ asset('js/user-cart.js') }}"></script>
+{% endblock %}
 
-    <div class="site-wrap">
+    <div class="site-wrap"  data-update-url="{{ path('update_article_quantity') }}" data-remove-url="{{ path('remove_article') }}">
         <header class="site-navbar" role="banner">
             <div class="site-navbar-top">
                 <div class="container">
@@ -41,6 +41,7 @@
                                                 <use xlink:href="#user"></use>
                                             </svg>
                                         </a>
+                                        {{ user.email }}
                                     </li>
                                     <!--<li><a href="#"><span class="icon icon-heart-o"></span></a></li>-->
                                     <li>
@@ -48,7 +49,11 @@
                                             <svg class="cart" width="18" height="18">
                                                 <use xlink:href="#cart"></use>
                                             </svg>
-                                            <span class="count">2</span>
+                                            {% set count = 0 %}
+                                            {% for item in allCartItems %}
+                                                {% set count = count + item.quantity %}
+                                            {% endfor %}
+                                            <span class="count" data-article-number="{{ count }}">{{ count }}</span>
                                         </a>
                                     </li>
                                     <li class="d-inline-block d-md-none ml-md-0"><a href="#" class="site-menu-toggle js-menu-toggle"><span class="icon-menu"></span></a></li>
@@ -121,9 +126,9 @@
                                 </thead>
                                 <tbody>
                                 {% for articleItem in  allCartItems %}
-                                    <tr>
+                                    <tr data-article-id="{{ articleItem.article.articleId }}">
                                         <td class="product-thumbnail">
-                                            <img src="images/cloth_1.jpg" alt="Image" class="img-fluid">
+                                            <img src="{{ asset(articleItem.article.articleImages | json_decode | first) }}" alt="Image" class="img-fluid">
                                         </td>
                                         <td class="product-name">
                                             <h2 class="h5 text-black">{{ articleItem.article.articleName }}</h2>
@@ -132,17 +137,17 @@
                                         <td>
                                             <div class="input-group mb-3" style="max-width: 120px;">
                                                 <div class="input-group-prepend">
-                                                    <button class="btn btn-outline-primary js-btn-minus" type="button">&minus;</button>
+                                                    <button class="btn btn-outline-primary js-btn-minus"  data-article-id="{{ articleItem.article.articleId }}" data-article-price="{{ articleItem.article.articlePrice }}" type="button">&minus;</button>
                                                 </div>
-                                                <input type="text" class="form-control text-center" value="{{ articleItem.quantity }}" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                                                <input type="text" class="form-control text-center product-quantity" data-article-id="{{ articleItem.article.articleId }}" value="{{ articleItem.quantity }}" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
                                                 <div class="input-group-append">
-                                                    <button class="btn btn-outline-primary js-btn-plus" type="button">&plus;</button>
+                                                    <button class="btn btn-outline-primary js-btn-plus" data-article-id="{{ articleItem.article.articleId }}" data-article-price="{{ articleItem.article.articlePrice }}" type="button">&plus;</button>
                                                 </div>
                                             </div>
 
                                         </td>
-                                        <td>${{ articleItem.article.articlePrice * articleItem.quantity }}</td>
-                                        <td><a href="#" class="btn btn-primary btn-sm">X</a></td>
+                                        <td class="product-total-price">${{ articleItem.article.articlePrice * articleItem.quantity }}</td>
+                                        <td><a href="#" class="btn btn-primary btn-sm js-remove-product" data-article-id="{{ articleItem.article.articleId }}">X</a></td>
                                     </tr>
                                 {% endfor %}
                                 </tbody>
@@ -187,7 +192,7 @@
                                         <span class="text-black">Subtotal</span>
                                     </div>
                                     <div class="col-md-6 text-right">
-                                        <strong class="text-black">$230.00</strong>
+                                        <strong id="subTotalPriceElmText" class="text-black">${{ allCartItems | total_price}}</strong>
                                     </div>
                                 </div>
                                 <div class="row mb-5">
@@ -195,7 +200,7 @@
                                         <span class="text-black">Total</span>
                                     </div>
                                     <div class="col-md-6 text-right">
-                                        <strong class="text-black">$230.00</strong>
+                                        <strong id="totalPriceElmText" class="text-black">${{ allCartItems | total_price}}</strong>
                                     </div>
                                 </div>
 
