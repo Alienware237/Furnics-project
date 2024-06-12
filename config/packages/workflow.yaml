@@ -1,0 +1,33 @@
+framework:
+  workflows:
+    orders_process:
+      type: state_machine
+      audit_trail:
+        enabled: true
+      marking_store:
+        type: 'method'
+        property: 'currentPlace'
+      supports:
+        - okpt\furnics\project\Entity\Orders
+      initial_marking: shopping_cart
+      places:
+        - shopping_cart
+        - delivery_address
+        - summary_for_purchase
+        - ordered
+      transitions:
+        proceed_to_delivery_address:
+          from: shopping_cart
+          to: delivery_address
+        proceed_to_summary:
+          from: delivery_address
+          to: summary_for_purchase
+        place_order:
+          from: summary_for_purchase
+          to: ordered
+        back_to_cart:
+          from: delivery_address
+          to: shopping_cart
+        back_to_delivery:
+          from: summary_for_purchase
+          to: delivery_address

@@ -72,9 +72,9 @@ class createArticleTestCommand extends Command
             ]
         ];
 
-        $this->articleManager->createArticle('First article', json_encode($articleDetail1), '19.99', 'Category1', json_encode(["uploads/6ae31620ed2008b113ff18668e9cb240.jpg"]));
-        $this->articleManager->createArticle('Second article', json_encode($articleDetail2), '17.99', 'Category2', json_encode(["uploads/7f204c6b218a8877fb2481383033c1e7.jpg"]));
-        $this->articleManager->createArticle('Third article', json_encode($articleDetail3), '18.99', 'Category3', json_encode(["uploads/af48075fdf77c49b05fccb069e0256bb.jpg"]));
+        $this->articleManager->createArticle('First article', json_encode($articleDetail1), 19.99, 'Category1', json_encode(["uploads/6ae31620ed2008b113ff18668e9cb240.jpg"]));
+        $this->articleManager->createArticle('Second article', json_encode($articleDetail2), 17.99, 'Category2', json_encode(["uploads/7f204c6b218a8877fb2481383033c1e7.jpg"]));
+        $this->articleManager->createArticle('Third article', json_encode($articleDetail3), 18.99, 'Category3', json_encode(["uploads/af48075fdf77c49b05fccb069e0256bb.jpg"]));
 
         return Command::SUCCESS;
     }

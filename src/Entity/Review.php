@@ -4,6 +4,7 @@ namespace okpt\furnics\project\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -22,24 +23,28 @@ class Review
     #[ORM\Column(type: 'integer')]
     private int $rating;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(nullable: false)]
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $userId;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'review')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: "user_id", nullable: false)]
+    private ?User $user = null;
 
-    #[ORM\ManyToOne(targetEntity: Article::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\JoinColumn(nullable: false)]
-    #[ORM\Column(type: 'integer')]
-    private int $articleId;
+    #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'review')]
+    #[ORM\JoinColumn(name: 'article_id', referencedColumnName: "article_id", nullable: false)]
+    private ?Article $article = null;
 
     #[ORM\Column(type: 'text')]
     private string $userData;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $createdAt;
+    private DateTimeInterface $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $updatedAt;
+    private DateTimeInterface $updatedAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
 
     public function getReviewId(): ?int
     {
@@ -54,7 +59,6 @@ class Review
     public function setReviewText(string $reviewText): self
     {
         $this->reviewText = $reviewText;
-
         return $this;
     }
 
@@ -66,31 +70,28 @@ class Review
     public function setRating(int $rating): self
     {
         $this->rating = $rating;
-
         return $this;
     }
 
-    public function getUserId(): ?int
+    public function getUser(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(?int $userId): self
+    public function setUser(?User $user): self
     {
-        $this->userId = $userId;
-
+        $this->user = $user;
         return $this;
     }
 
-    public function getArticleId(): int
+    public function getArticle(): ?Article
     {
-        return $this->articleId;
+        return $this->article;
     }
 
-    public function setArticleId(int $articleId): self
+    public function setArticle(?Article $article): self
     {
-        $this->articleId = $articleId;
-
+        $this->article = $article;
         return $this;
     }
 
@@ -102,25 +103,28 @@ class Review
     public function setUserData(string $userData): self
     {
         $this->userData = $userData;
-
         return $this;
     }
 
-    public function getCreatedAt(): DateTime {
+    public function getCreatedAt(): DateTimeInterface
+    {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTime $createdDate): static {
-        $this->createdAt = $createdDate;
+    public function setCreatedAt(DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
         return $this;
     }
 
-    public function getUpdatedAt(): DateTime {
+    public function getUpdatedAt(): DateTimeInterface
+    {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTime $updatedDate): static {
-        $this->createdAt = $updatedDate;
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
         return $this;
     }
 }

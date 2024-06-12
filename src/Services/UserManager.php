@@ -10,12 +10,14 @@ class UserManager {
 
     private $entityManager;
     private $cartManager;
+    private $ordersManager;
     private $logger;
 
-    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, CartManager $cartManager)
+    public function __construct(EntityManagerInterface $entityManager, LoggerInterface $logger, CartManager $cartManager, OrdersManager $ordersManager)
     {
         $this->entityManager = $entityManager;
         $this->cartManager = $cartManager;
+        $this->ordersManager = $ordersManager;
         $this->logger = $logger;
     }
 
@@ -44,15 +46,11 @@ class UserManager {
     }
     public function createUser(User $user): User
     {
-        $user->setRole(2);
-        $user->setCreatedAt(new \DateTime());
-        $user->setUpdatedAt(new \DateTime());
-
-
         $this->entityManager->persist($user);
-        $this->entityManager->flush();
 
-        $this->cartManager->createCart($user->getUserId());
+        $this->cartManager->createCart($user);
+        $this->ordersManager->createOrder($user);
+        $this->entityManager->flush();
         return $user;
     }
 

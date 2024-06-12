@@ -6,6 +6,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\Article;
 use okpt\furnics\project\Entity\Cart;
 use okpt\furnics\project\Entity\CartItem;
+use okpt\furnics\project\Entity\User;
 use Psr\Log\LoggerInterface;
 
 class CartManager
@@ -22,37 +23,35 @@ class CartManager
         $this->logger = $logger;
     }
 
-    public function createCart(int $UserId)
+    public function createCart(User $user): void
     {
         $cart = new Cart();
-        $cart->setUserId(intval($UserId));
-        $cart->setCreatedAt(new \DateTime());
-        $cart->setUpdatedAt(new \DateTime());
+        $cart->setUser($user);
 
         $this->cartManager->persist($cart);
         $this->cartManager->flush();
     }
 
-    public function getCart(int $user_id): array
+    public function getCart(User $user)
     {
-        $this->logger->info('Find Cart of user: ' . $user_id);
-        return $this->cartManager->getRepository(Cart::class)->findBy(['userId' => intval($user_id)]);
+        //$this->logger->info(json_encode($user));
+        return $this->cartManager->getRepository(Cart::class)->findBy(['user' => $user]);
     }
 
-    public function removeCart(int $user_id) {
-        $cart = $this->getCart($user_id);
+    public function removeCart(User $user) {
+        $cart = $this->getCart($user);
         if (is_array($cart)) {
             $cart = $cart[0];
         }
         $this->cartManager->remove($cart);
     }
 
-    public function getAllCartArticle(int $cartId): array {
+    public function getAllCartArticle(Cart $cart): array {
         $allCartItem = [];
-        $cartItems = $this->entityManager->getRepository(CartItem::class)->findBy(['cartId' => $cartId]);
+        $cartItems = $this->entityManager->getRepository(CartItem::class)->findBy(['cart' => $cart]);
 
         foreach ($cartItems as $cartItem) {
-            $article = $this->entityManager->getRepository(Article::class)->find($cartItem->getarticleId());
+            $article = $this->entityManager->getRepository(Article::class)->find($cartItem->getarticle());
             $allCartItem[] = array("article" => $article, "quantity" => $cartItem->getQuantity(), "detail" => $cartItem->getDetailsOfChoice());
         }
 

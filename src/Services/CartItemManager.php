@@ -3,41 +3,48 @@
 namespace okpt\furnics\project\Services;
 
 use Doctrine\ORM\EntityManagerInterface;
+use okpt\furnics\project\Entity\Article;
+use okpt\furnics\project\Entity\Cart;
 use okpt\furnics\project\Entity\CartItem;
+use okpt\furnics\project\Repository\CartItemRepository;
 
 class CartItemManager
 {
 
     private $cartItemManager;
+    private $cartItemRepository;
 
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, CartItemRepository $cartItemRepository)
     {
         $this->cartItemManager = $entityManager;
+        $this->cartItemRepository = $cartItemRepository;
     }
 
-    public function newCartItem(int $cartId, int $articleId, int $quantity, string $detailOfChoise)
+    public function newCartItem(Cart $cart, Article $article, int $quantity, string $detailOfChoise)
     {
         $cartItem = new CartItem();
-        $cartItem->setCartId($cartId);
-        $cartItem->setProductId($articleId);
+        $cartItem->setCart($cart);
+        $cartItem->setArticle($article);
         $cartItem->setQuantity($quantity);
         $cartItem->setDetailsOfChoice($detailOfChoise);
-        $cartItem->setCreatedAt(new \DateTime());
-        $cartItem->setUpdatedAt(new \DateTime());
         $this->cartItemManager->persist($cartItem);
         $this->cartItemManager->flush();
-        return $cartItem;
     }
 
     public function removeCartItem(CartItem $cartItem) {
         $this->cartItemManager->remove($cartItem);
     }
 
+    public function removeAllCartItem(Cart $cart)
+    {
+        $this->cartItemRepository->deleteAllCartItem($cart);
+    }
+
     public function getCartItemById(int $cart_item_id) {
         return $this->cartItemManager->getRepository(CartItem::class)->findBy(['cartItemId' => $cart_item_id]);
     }
 
-    public function getCartItemByCartId(int $cart_id) {
-        return $this->cartItemManager->getRepository(CartItem::class)->findBy(['cartId' => $cart_id]);
+    public function getCartItemByCartId(Cart $cart) {
+        return $this->cartItemManager->getRepository(CartItem::class)->findBy(['cart' => $cart]);
     }
 }

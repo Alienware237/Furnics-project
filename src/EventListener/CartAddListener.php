@@ -36,22 +36,41 @@ final class CartAddListener
 
         // Logic to add the article to the user's cart
         $user = $this->entityManager->getRepository(User::class)->findBy(['email' => $userEmail]);
+        $article = $this->entityManager->getRepository(Article::class)->findOneBy(['articleId' => $articleId]);
 
         if (is_array($user)) {
             $user = $user[0];
         }
 
-        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['userId' => $user->getUserId()]);
-        $this->logger->info('Finding CartId: '. $cart->getCartId());
-        $cartItem = $this->cartItemManager->newCartItem($cart->getCartId(), $articleId, 1, '');
-        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
+        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['user' => $user]);
 
-        if ($article) {
-            $this->entityManager->persist($cartItem);
-            $this->entityManager->flush();
-            $this->logger->info("Article $articleId added to cart for user $userEmail.");
-        } else {
-            $this->logger->error("Failed to add article $articleId to cart for user $userEmail.");
+        if (!$cart) {
+            // Handle the case where the cart does not exist
+            $this->logger->error("Cart not found for user $userEmail.");
+            return;
         }
+        $this->logger->info('Finding CartId: '. $cart->getCartId());
+
+        if (!$article) {
+            // Handle the case where the article does not exist
+            $this->logger->error("Article $articleId not found.");
+            return;
+        }
+
+        // Create a new CartItem and set its attributes
+        $cartItem = new CartItem();
+        $cartItem->setArticle($article); // Set the Article entity
+        $cartItem->setQuantity(1); // Set the quantity
+        $cartItem->setDetailsOfChoice(''); // Set details of choice if needed
+
+// Add the CartItem to the Cart
+        $cart->addCartItem($cartItem);
+
+        $this->entityManager->persist($cart);
+        $this->entityManager->flush();
+        //$this->cartItemManager->newCartItem($cart, $article, 1, '');
+        $this->logger->info("Article $articleId added to cart for user $userEmail.");
+
+        $this->logger->error("Failed to add article $articleId to cart for user $userEmail.");
     }
 }

@@ -4,6 +4,7 @@ namespace okpt\furnics\project\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -16,53 +17,56 @@ class OrderItem
     #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $orderItemId = null;
 
-    #[ORM\ManyToOne(targetEntity: Order::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\Column(type: 'integer')]
-    private int $orderId;
+    #[ORM\ManyToOne(targetEntity: Orders::class, inversedBy: 'orderItem')]
+    #[ORM\JoinColumn(name: 'order_id', referencedColumnName: "order_id", nullable: false)]
+    private ?Orders $order = null;
 
-    #[ORM\OneToOne(targetEntity: Article::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\Column(type: 'integer')]
-    #[ORM\JoinColumn(nullable: false)]
-    private int $articleId;
+    #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'orderItem')]
+    #[ORM\JoinColumn(name: 'article_id', referencedColumnName: "article_id", nullable: false)]
+    private ?Article $article = null;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: false)]
     private int $quantity;
 
     #[ORM\Column(type: 'float', nullable: false)]
     private float $unitPrice;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $createdAt;
+    #[ORM\Column(type: 'datetime', nullable: false)]
+    private DateTimeInterface $createdAt;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $updatedAt;
+    #[ORM\Column(type: 'datetime', nullable: false)]
+    private DateTimeInterface $updatedAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
 
     public function getOrderItemId(): ?int
     {
         return $this->orderItemId;
     }
 
-    public function getOrderId(): int
+    public function getOrder(): ?Orders
     {
-        return $this->orderId;
+        return $this->order;
     }
 
-    public function setOrderId(int $orderId): self
+    public function setOrder(?Orders $order): self
     {
-        $this->orderId = $orderId;
-
+        $this->order = $order;
         return $this;
     }
 
-    public function getArticleId(): int
+    public function getArticle(): ?Article
     {
-        return $this->articleId;
+        return $this->article;
     }
 
-    public function setArticleId(int $articleId): self
+    public function setArticle(?Article $article): self
     {
-        $this->articleId = $articleId;
-
+        $this->article = $article;
         return $this;
     }
 
@@ -74,7 +78,6 @@ class OrderItem
     public function setQuantity(int $quantity): self
     {
         $this->quantity = $quantity;
-
         return $this;
     }
 
@@ -86,25 +89,28 @@ class OrderItem
     public function setUnitPrice(float $unitPrice): self
     {
         $this->unitPrice = $unitPrice;
-
         return $this;
     }
 
-    public function getCreatedAt(): DateTime {
+    public function getCreatedAt(): DateTimeInterface
+    {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTime $createdDate): static {
-        $this->createdAt = $createdDate;
+    public function setCreatedAt(DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
         return $this;
     }
 
-    public function getUpdatedAt(): DateTime {
+    public function getUpdatedAt(): DateTimeInterface
+    {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTime $updatedDate): static {
-        $this->createdAt = $updatedDate;
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
         return $this;
     }
 }
