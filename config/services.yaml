@@ -55,5 +55,11 @@ services:
     okpt\furnics\project\Controller\CartController:
         arguments:
             $csrfTokenManager: '@security.csrf.token_manager'
+
+    okpt\furnics\project\Controller\CheckoutController:
+        arguments:
+            $ordersProcessStateMachine: '@state_machine.orders_process'
+
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

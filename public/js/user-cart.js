@@ -96,3 +96,10 @@ $(document).ready(function() {
         });
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('place-order-button').addEventListener('click', function(event) {
+        event.preventDefault();
+        document.getElementById('checkout-form').submit();
+    });
+});

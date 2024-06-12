@@ -25,8 +25,6 @@ class ArticleManager
         $article->setArticlePrice($price);
         $article->setArticleCategory($category);
         $article->setArticleImages($image);
-        $article->setCreatedAt(new \Datetime());
-        $article->setUpdatedAt(new \DateTime());
 
 
         $this->entityManager->persist($article);

@@ -30,6 +30,8 @@
 
 <!-- Damit der Adminn Bilder uploaden kann ist es notwendig Directory Permissions und Directory Ownership zu geben -->
 
+<!-- Create the database by runnig -->
+- php bin/console doctrine:database:create
 <!-- create the database schema by running -->
 - php bin/console doctrine:schema:create
 <!-- Open the browser on following link -->

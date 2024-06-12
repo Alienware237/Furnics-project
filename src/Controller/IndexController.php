@@ -75,18 +75,18 @@ class IndexController extends AbstractController
                 if ($user && $passwordEncoder->isPasswordValid($user, $password)) {
                     $response = new Response();
 
-                    $this->logger->info('Try to sign in with username: ' . $user->getUsername());
+                    //$this->logger->info('Try to sign in with username: ' . $user->getUsername());
                     $this->authenticationService->signIn($user, true, $response);
 
                     //return $this->redirectToRoute('app_index');
                 }
             }
         }
-        $cart = $this->cartManager->getCart($user->getUserId());
+        $cart = $this->cartManager->getCart($user);
         if (is_array($cart)) {
             $cart = $cart[0];
         }
-        $allCartItems = $this->cartManager->getAllCartArticle($cart->getCartId());
+        $allCartItems = $this->cartManager->getAllCartArticle($cart);
         //print_r($user);
         return $this->render('index/index.html.twig', [
             'controller_name' => 'IndexController',

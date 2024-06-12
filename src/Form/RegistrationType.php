@@ -4,6 +4,7 @@ namespace okpt\furnics\project\Form;
 
 use okpt\furnics\project\Entity\User;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -28,7 +29,7 @@ class RegistrationType extends AbstractType
             ])
             ->add('salutation', TextType::class)
             ->add('street', TextType::class)
-            ->add('houseNumber', TextType::class)
+            ->add('houseNumber', NumberType::class)
             ->add('zipCode', TextType::class)
             ->add('city', TextType::class)
             ->add('country', TextType::class)

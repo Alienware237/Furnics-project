@@ -4,6 +4,9 @@ namespace okpt\furnics\project\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use DateTime;
+use DateTimeInterface;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -51,18 +54,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255)]
     private ?string $phone = null;
 
-    #[ORM\Column(type: 'integer', nullable: false)]
-    private ?string $role = null;
+    #[ORM\Column(type: 'string', nullable: false)]
+    private string $role;
 
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $cookie = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private $created_at;
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Cart::class, cascade: ['persist', 'remove'])]
+    private Cart $cart;
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Orders::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    private Orders $orders;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    private Collection $reviews;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Comment::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    private Collection $comments;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private $updated_at;
+    private DateTimeInterface $createdAt;
 
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
+    private DateTimeInterface $updatedAt;
+
+    public function __construct()
+    {
+        $this->role = 'user';
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+        $this->reviews = new ArrayCollection();
+        $this->comments = new ArrayCollection();
+    }
 
     public function getUserId(): ?int
     {
@@ -77,7 +100,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setLastName(?string $lastName): self
     {
         $this->lastName = $lastName;
-
         return $this;
     }
 
@@ -89,7 +111,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setFirstName(?string $firstName): self
     {
         $this->firstName = $firstName;
-
         return $this;
     }
 
@@ -101,7 +122,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(?string $email): self
     {
         $this->email = $email;
-
         return $this;
     }
 
@@ -113,7 +133,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(?string $password): self
     {
         $this->password = $password;
-
         return $this;
     }
 
@@ -125,7 +144,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSalutation(?string $salutation): self
     {
         $this->salutation = $salutation;
-
         return $this;
     }
 
@@ -137,7 +155,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setStreet(?string $street): self
     {
         $this->street = $street;
-
         return $this;
     }
 
@@ -149,7 +166,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setHouseNumber(?int $houseNumber): self
     {
         $this->houseNumber = $houseNumber;
-
         return $this;
     }
 
@@ -161,7 +177,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setZipCode(?string $zipCode): self
     {
         $this->zipCode = $zipCode;
-
         return $this;
     }
 
@@ -173,7 +188,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCity(?string $city): self
     {
         $this->city = $city;
-
         return $this;
     }
 
@@ -185,7 +199,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCountry(?string $country): self
     {
         $this->country = $country;
-
         return $this;
     }
 
@@ -197,7 +210,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhone(?string $phone): self
     {
         $this->phone = $phone;
-
         return $this;
     }
 
@@ -209,7 +221,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRole(?string $role): self
     {
         $this->role = $role;
-
         return $this;
     }
 
@@ -221,14 +232,22 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setCookie(?string $cookie): self
     {
         $this->cookie = $cookie;
-
         return $this;
     }
 
-    // Implement methods required by UserInterface
     public function getUsername(): string
     {
         return $this->email;
+    }
+
+    public function getCart(): Collection
+    {
+        return $this->cart;
+    }
+
+    public function getOrder(): Collection
+    {
+        return $this->order;
     }
 
     public function getRoles(): array
@@ -238,31 +257,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getSalt(): ?string
     {
-        // Not needed when using bcrypt or argon2i
         return null;
     }
 
     public function eraseCredentials()
     {
-        // Remove sensitive data stored in plain-text password, if any
         $this->password = null;
     }
 
     public function getCreatedAt(): \DateTimeInterface {
-        return $this->created_at;
+        return $this->createdAt;
     }
 
     public function setCreatedAt(\DateTimeInterface $created_at): static {
-        $this->created_at = $created_at;
+        $this->createdAt = $created_at;
         return $this;
     }
 
     public function getUpdatedAt(): \DateTimeInterface {
-        return $this->updated_at;
+        return $this->updatedAt;
     }
 
     public function setUpdatedAt(\DateTimeInterface $updated_at): static {
-        $this->updated_at = $updated_at;
+        $this->updatedAt = $updated_at;
         return $this;
     }
 

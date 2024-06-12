@@ -235,18 +235,19 @@ class ArticleController extends AbstractController
         $articleId = $data['articleId'];
         $action = $data['action'];
 
-        $this->logger->debug('$data[articleId]: ' . $articleId);
+        //$this->logger->debug('$data[articleId]: ' . $articleId);
 
         $userEmail = $this->getUser()->getEmail();
 
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
+        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
 
-        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['userId' => $user->getUserId()]);
+        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['user' => $user]);
 
         if (is_array($cart)) {
             $cart = $cart[0];
         }
-        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['cartId' => $cart->getCartId(), 'articleId' => $articleId]);
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['cart' => $cart, 'article' => $article]);
 
         if ($cartItem) {
             if ($action === 'increase') {
@@ -277,14 +278,15 @@ class ArticleController extends AbstractController
         //print_r($userEmail);
 
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
+        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
 
 
-        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['userId' => $user->getUserId()]);
+        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['user' => $user]);
 
         if (is_array($cart)) {
             $cart = $cart[0];
         }
-        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['cartId' => $cart->getCartId(), 'articleId' => $articleId]);
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['cart' => $cart, 'article' => $article]);
 
         // Fetch the article and remove it
         if ($cartItem) {

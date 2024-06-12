@@ -15,4 +15,6 @@
             <a href="{{ path('delete_article', {'id': article.articleId}) }}" class="btn btn-danger delete-article" data-article-id="{{ article.articleId }}">Delete</a>
         </td>
     </tr>
+
+    {% include 'footer/footer.html.twig' %}
 {% endfor %}

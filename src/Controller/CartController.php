@@ -2,7 +2,11 @@
 
 namespace okpt\furnics\project\Controller;
 
+use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
+use okpt\furnics\project\Entity\Orders;
 use okpt\furnics\project\Event\CartAddEvent;
+use okpt\furnics\project\Event\OrderEvent;
 use okpt\furnics\project\Services\CartManager;
 use okpt\furnics\project\Services\UserManager;
 use Psr\Log\LoggerInterface;
@@ -15,21 +19,27 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Workflow\WorkflowInterface;
 
 class CartController extends AbstractController
 {
     private $userManager;
     private $cartManager;
+
+    private $entityManager;
     private $logger;
     private $eventDispatcher;
     private $csrfTokenManager;
+    private $workflow;
 
-    public function __construct(UserManager $userManager, CartManager $cartManager, LoggerInterface $logger, CsrfTokenManagerInterface $csrfTokenManager, EventDispatcherInterface $eventDispatcher) {
+    public function __construct(UserManager $userManager, CartManager $cartManager, EntityManagerInterface $entityManager, LoggerInterface $logger, CsrfTokenManagerInterface $csrfTokenManager, EventDispatcherInterface $eventDispatcher, WorkflowInterface $ordersProcessStateMachine) {
         $this->userManager = $userManager;
         $this->cartManager = $cartManager;
+        $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->csrfTokenManager = $csrfTokenManager;
         $this->eventDispatcher = $eventDispatcher;
+        $this->workflow = $ordersProcessStateMachine;
     }
     #[Route('/cart', name: 'app_cart')]
     public function index(AuthenticationUtils $authenticationUtils): Response
@@ -40,11 +50,25 @@ class CartController extends AbstractController
 
         $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
 
-        $cart = $this->cartManager->getCart($user->getUserId());
-        if (is_array($cart)) {
-            $cart = $cart[0];
+        $cart = $this->cartManager->getCart($user);
+        $cart = is_array($cart) ? $cart[0] : $cart;
+
+        $allCartItems = $this->cartManager->getAllCartArticle($cart);
+
+        $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+
+        if (!$order) {
+            throw $this->createNotFoundException('Order not found.');
         }
-        $allCartItems = $this->cartManager->getAllCartArticle($cart->getCartId());
+        if (sizeof($allCartItems)>0) {
+            $this->logger->info('Current order state: ' . $order->getCurrentPlace());
+
+            $order->setNextTransition('proceed_to_delivery_address');
+            // Dispatch the order event
+            $event = new OrderEvent($order);
+            $this->eventDispatcher->dispatch($event, OrderEvent::NAME);
+            $this->entityManager->flush();
+        }
 
         return $this->render('cart/index.html.twig', [
             'controller_name' => 'CartController',
