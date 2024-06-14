@@ -42,6 +42,13 @@ class Payment
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $updatedAt;
 
+    public function __construct()
+    {
+        $this->datum = new DateTime();
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
+    }
+
     public function getPaymentId(): ?int
     {
         return $this->paymentId;

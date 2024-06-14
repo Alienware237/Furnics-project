@@ -15,7 +15,6 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
 class UserController extends AbstractController
 {
-
     private UserManager $userManager;
     private $authenticationService;
 
@@ -33,6 +32,7 @@ class UserController extends AbstractController
         ]);
     }
 
+    /*
     #[Route('/user/login', name: 'app_user_login')]
     public function executeLogin(Request $request)
     {
@@ -82,6 +82,7 @@ class UserController extends AbstractController
 
         return $this->redirectToRoute('homepage');
     }
+    */
 
 
     #[Route('/user/register', name: 'app_user_register')]

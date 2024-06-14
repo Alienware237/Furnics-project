@@ -24,7 +24,6 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ArticleController extends AbstractController
 {
-
     private LoggerInterface $logger;
     private $articleManager;
     private $entityManager;

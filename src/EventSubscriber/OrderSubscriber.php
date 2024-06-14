@@ -25,7 +25,7 @@ class OrderSubscriber implements EventSubscriberInterface
         ];
     }
 
-    public function onOrderTransition(OrderEvent $event)
+    public function onOrderTransition(OrderEvent $event): void
     {
         $order = $event->getOrder();
         $transitionName = $order->getNextTransition();

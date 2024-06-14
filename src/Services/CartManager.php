@@ -38,7 +38,8 @@ class CartManager
         return $this->cartManager->getRepository(Cart::class)->findBy(['user' => $user]);
     }
 
-    public function removeCart(User $user) {
+    public function removeCart(User $user)
+    {
         $cart = $this->getCart($user);
         if (is_array($cart)) {
             $cart = $cart[0];
@@ -46,7 +47,8 @@ class CartManager
         $this->cartManager->remove($cart);
     }
 
-    public function getAllCartArticle(Cart $cart): array {
+    public function getAllCartArticle(Cart $cart): array
+    {
         $allCartItem = [];
         $cartItems = $this->entityManager->getRepository(CartItem::class)->findBy(['cart' => $cart]);
 

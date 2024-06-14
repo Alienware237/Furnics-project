@@ -4,6 +4,7 @@ namespace okpt\furnics\project\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\Orders;
+use okpt\furnics\project\Entity\Payment;
 use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Event\OrderEvent;
 use okpt\furnics\project\Form\DeliveryAddressType;
@@ -41,7 +42,7 @@ class CheckoutController extends AbstractController
         $this->dispatcher = $dispatcher;
         $this->addressChecker = $addressChecker;
     }
-    #[Route('/checkout', name: 'app_checkout')]
+    #[Route('/checkout-old', name: 'app_checkout')]
     public function index(): Response
     {
         $user = $this->getUser();
@@ -61,8 +62,8 @@ class CheckoutController extends AbstractController
         ]);
     }
 
-    #[Route('/checkout-n', name: 'checkout')]
-    public function index_w(Request $request)
+    #[Route('/checkout', name: 'checkout')]
+    public function index_checkout(Request $request)
     {
         $user = $this->getUser();
         $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
@@ -98,7 +99,7 @@ class CheckoutController extends AbstractController
         $allCartItems = $this->cartManager->getAllCartArticle($cart);
 
         if (sizeof($allCartItems) < 1) {
-           return $this->redirectToRoute('checkout');
+            return $this->redirectToRoute('checkout');
         }
 
         $form = $this->createForm(DeliveryAddressType::class, $order);
@@ -152,6 +153,20 @@ class CheckoutController extends AbstractController
             $this->dispatcher->dispatch(new OrderEvent($order), OrderEvent::NAME);
             $order->setTotalAmount(0);
             $this->entityManager->persist($order);
+
+            $allArticlesPrices = 0;
+            foreach ($allCartItems as $articleItem) {
+                $articlePrice = $articleItem['article']->getArticlePrice();
+                $allArticlesPrices += ($articlePrice * $articleItem['quantity']);
+            }
+
+            $payment = new Payment();
+            $payment->setUser($user);
+            $payment->setOrder($order);
+            $payment->setPaymentArt('Paypal');
+            $payment->setAmount($allArticlesPrices);
+
+            $this->entityManager->persist($payment);
             $this->entityManager->flush();
             return $this->redirectToRoute('checkout');
         }

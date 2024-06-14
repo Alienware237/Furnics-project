@@ -260,25 +260,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return null;
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
         $this->password = null;
     }
 
-    public function getCreatedAt(): \DateTimeInterface {
+    public function getCreatedAt(): \DateTimeInterface
+    {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(\DateTimeInterface $created_at): static {
+    public function setCreatedAt(\DateTimeInterface $created_at): static
+    {
         $this->createdAt = $created_at;
         return $this;
     }
 
-    public function getUpdatedAt(): \DateTimeInterface {
+    public function getUpdatedAt(): \DateTimeInterface
+    {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(\DateTimeInterface $updated_at): static {
+    public function setUpdatedAt(\DateTimeInterface $updated_at): static
+    {
         $this->updatedAt = $updated_at;
         return $this;
     }

@@ -32,7 +32,8 @@ class CartController extends AbstractController
     private $csrfTokenManager;
     private $workflow;
 
-    public function __construct(UserManager $userManager, CartManager $cartManager, EntityManagerInterface $entityManager, LoggerInterface $logger, CsrfTokenManagerInterface $csrfTokenManager, EventDispatcherInterface $eventDispatcher, WorkflowInterface $ordersProcessStateMachine) {
+    public function __construct(UserManager $userManager, CartManager $cartManager, EntityManagerInterface $entityManager, LoggerInterface $logger, CsrfTokenManagerInterface $csrfTokenManager, EventDispatcherInterface $eventDispatcher, WorkflowInterface $ordersProcessStateMachine)
+    {
         $this->userManager = $userManager;
         $this->cartManager = $cartManager;
         $this->entityManager = $entityManager;
@@ -60,7 +61,7 @@ class CartController extends AbstractController
         if (!$order) {
             throw $this->createNotFoundException('Order not found.');
         }
-        if (sizeof($allCartItems)>0) {
+        if (sizeof($allCartItems) > 0) {
             $this->logger->info('Current order state: ' . $order->getCurrentPlace());
 
             $order->setNextTransition('proceed_to_delivery_address');

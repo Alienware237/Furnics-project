@@ -17,12 +17,11 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class createArticleTestCommand extends Command
 {
-    private $articleManager;
+    private ArticleManager $articleManager;
 
     public function __construct(
         ArticleManager $articleManager
-    )
-    {
+    ) {
         parent::__construct();
         $this->articleManager = $articleManager;
     }

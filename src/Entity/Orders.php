@@ -198,20 +198,24 @@ class Orders
         return $this;
     }
 
-    public function getCreatedAt(): DateTime {
+    public function getCreatedAt(): DateTime
+    {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTime $createdDate): static {
+    public function setCreatedAt(DateTime $createdDate): static
+    {
         $this->createdAt = $createdDate;
         return $this;
     }
 
-    public function getUpdatedAt(): DateTime {
+    public function getUpdatedAt(): DateTime
+    {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTime $updatedDate): static {
+    public function setUpdatedAt(DateTime $updatedDate): static
+    {
         $this->updatedAt = $updatedDate;
         return $this;
     }

@@ -39,7 +39,7 @@ class IndexController extends AbstractController
         $this->logger = $logger;
     }
 
-    public function getAllArticle (ArticleManager $articleManager)
+    public function getAllArticle(ArticleManager $articleManager): void
     {
         $allArticle = $articleManager->getAllArticles();
     }

@@ -10,7 +10,6 @@ use okpt\furnics\project\Repository\CartItemRepository;
 
 class CartItemManager
 {
-
     private $cartItemManager;
     private $cartItemRepository;
 
@@ -31,7 +30,8 @@ class CartItemManager
         $this->cartItemManager->flush();
     }
 
-    public function removeCartItem(CartItem $cartItem) {
+    public function removeCartItem(CartItem $cartItem)
+    {
         $this->cartItemManager->remove($cartItem);
     }
 
@@ -40,11 +40,13 @@ class CartItemManager
         $this->cartItemRepository->deleteAllCartItem($cart);
     }
 
-    public function getCartItemById(int $cart_item_id) {
+    public function getCartItemById(int $cart_item_id)
+    {
         return $this->cartItemManager->getRepository(CartItem::class)->findBy(['cartItemId' => $cart_item_id]);
     }
 
-    public function getCartItemByCartId(Cart $cart) {
+    public function getCartItemByCartId(Cart $cart)
+    {
         return $this->cartItemManager->getRepository(CartItem::class)->findBy(['cart' => $cart]);
     }
 }

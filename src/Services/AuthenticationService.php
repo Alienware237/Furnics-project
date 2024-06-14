@@ -2,7 +2,6 @@
 
 namespace okpt\furnics\project\Services\Security;
 
-
 use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Services\UserManager;

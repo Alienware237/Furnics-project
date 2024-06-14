@@ -46,7 +46,8 @@ class UserRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    public function findOneById($id) {
+    public function findOneById($id)
+    {
         return $this->createQueryBuilder('u')
             ->andWhere('u.id = :val')
             ->setParameter('val', $id)

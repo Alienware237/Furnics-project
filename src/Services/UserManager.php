@@ -6,8 +6,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\User;
 use Psr\Log\LoggerInterface;
 
-class UserManager {
-
+class UserManager
+{
     private $entityManager;
     private $cartManager;
     private $ordersManager;
@@ -54,17 +54,20 @@ class UserManager {
         return $user;
     }
 
-    public function updateUser(User $user): void {
+    public function updateUser(User $user): void
+    {
 
         $user->setUpdatedAt(new \DateTime());
         $this->entityManager->persist($user);
         $this->entityManager->flush();
     }
-    public function deleteUser(User $user): void {
+    public function deleteUser(User $user): void
+    {
         $this->entityManager->remove($user);
     }
 
-    public function getUserById(int $id): User {
+    public function getUserById(int $id): User
+    {
         return $this->entityManager->find(User::class, $id);
     }
 
@@ -84,17 +87,21 @@ class UserManager {
         return $this->entityManager->getRepository(User::class)->findOneBy(['cookie' => $cookie]);
     }
 
-    public function getUserByEmailAndCookie(string $email, string $cookie) {
+    public function getUserByEmailAndCookie(string $email, string $cookie)
+    {
         return $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email, 'cookie' => $cookie]);
     }
 
-    public function getUserByName(string $name): User {
+    public function getUserByName(string $name): User
+    {
         return $this->entityManager->find(User::class, $name);
     }
-    public function getUserByCategory(string $email): User {
+    public function getUserByCategory(string $email): User
+    {
         return $this->entityManager->find(User::class, $email);
     }
-    public function getAllUsers(): array {
+    public function getAllUsers(): array
+    {
         return $this->entityManager->getRepository(User::class)->findAll();
     }
 }

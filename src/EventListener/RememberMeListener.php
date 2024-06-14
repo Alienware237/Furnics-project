@@ -39,13 +39,13 @@ class RememberMeListener
 
             $this->logger->info("Remember Me $rememberKey");
 
-            $user = $this->entityManager->getUserByEmailAndCookie($email, $rememberKey,);
+            $user = $this->entityManager->getUserByEmailAndCookie($email, $rememberKey, );
 
             if ($user) {
                 if (is_array($user)) {
                     $user = $user[0];
                 }
-                $token = new UsernamePasswordToken($user,'main', $user->getRoles());
+                $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
                 $this->tokenStorage->setToken($token);
 
                 $request->getSession()->set('_security_main', serialize($token));
