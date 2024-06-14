@@ -114,7 +114,7 @@
                     </div>
                 </div>
                 <div class="contain">
-                    {{ form_start(form) }}
+                    {{ form_start(form, { 'attr': {'id': 'delivery_address_form'} }) }}
                     <h2>Delivery Address</h2>
                     {% if form.vars.errors|length > 0 %}
                         <div class="alert alert-danger">

@@ -12,6 +12,15 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('style.scss') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('css/user-register-form.scss') }}">
     <h1>Login</h1>
+    {% for label, messages in app.flashes %}
+        <div class="alert alert-danger">
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
     <div class="contain">
         {{ form_start(form) }}
         {% for field in form %}

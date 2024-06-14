@@ -39,7 +39,7 @@ class RememberFilter
             ]);
 
             if ($user) {
-                $token = new UsernamePasswordToken($user,'main', $user->getRoles());
+                $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
                 $this->tokenStorage->setToken($token);
 
                 $request->getSession()->set('_security_main', serialize($token));

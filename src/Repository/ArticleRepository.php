@@ -21,13 +21,13 @@ class ArticleRepository extends ServiceEntityRepository
     public function __construct(
         ManagerRegistry $registry,
         EntityManagerInterface $entityManager
-    )
-    {
+    ) {
         parent::__construct($registry, Article::class);
         $this->entityManager = $entityManager;
     }
 
-    public function insertArticle(Article $article) {
+    public function insertArticle(Article $article)
+    {
         $this->entityManager->persist($article);
         $this->entityManager->flush();
     }

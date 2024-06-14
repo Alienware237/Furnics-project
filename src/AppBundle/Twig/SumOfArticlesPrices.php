@@ -7,14 +7,14 @@ use Twig\TwigFilter;
 
 class SumOfArticlesPrices extends AbstractExtension
 {
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
             new TwigFilter('total_price', [$this, 'sumOfArticlesPrices']),
         ];
     }
 
-    public function sumOfArticlesPrices(array $allArticles)
+    public function sumOfArticlesPrices(array $allArticles): float|int
     {
         $allArticlesPrices = 0;
         foreach ($allArticles as $articleItem) {

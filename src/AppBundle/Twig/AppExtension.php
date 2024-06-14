@@ -1,4 +1,5 @@
 <?php
+
 namespace okpt\furnics\project\AppBundle\Twig;
 
 use Twig\Extension\AbstractExtension;
@@ -7,7 +8,7 @@ use Twig\TwigFunction;
 
 class AppExtension extends AbstractExtension
 {
-    public function getFilters()
+    public function getFilters(): array
     {
         return [
             new TwigFilter('json_decode', [$this, 'jsonDecode']),

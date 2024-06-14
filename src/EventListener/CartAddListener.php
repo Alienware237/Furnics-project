@@ -63,7 +63,7 @@ final class CartAddListener
         $cartItem->setQuantity(1); // Set the quantity
         $cartItem->setDetailsOfChoice(''); // Set details of choice if needed
 
-// Add the CartItem to the Cart
+        // Add the CartItem to the Cart
         $cart->addCartItem($cartItem);
 
         $this->entityManager->persist($cart);

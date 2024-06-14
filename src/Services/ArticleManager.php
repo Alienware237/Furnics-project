@@ -1,4 +1,5 @@
 <?php
+
 // src/Service/ProductManager.php
 
 namespace okpt\furnics\project\Services;
@@ -6,6 +7,7 @@ namespace okpt\furnics\project\Services;
 use DateTime;
 use okpt\furnics\project\Entity\Article;
 use Doctrine\ORM\EntityManagerInterface;
+
 use function Symfony\Component\Clock\now;
 
 class ArticleManager
@@ -31,26 +33,32 @@ class ArticleManager
         $this->entityManager->flush();
     }
 
-    public function updateArticle(Article $article): void {
+    public function updateArticle(Article $article): void
+    {
         $article->setUpdatedAt(new \DateTime());
         $this->entityManager->persist($article);
         $this->entityManager->flush();
     }
-    public function deleteArticle(Article $article): void {
+    public function deleteArticle(Article $article): void
+    {
         $this->entityManager->remove($article);
     }
 
-    public function getArticleById(int $id): Article {
+    public function getArticleById(int $id): Article
+    {
         return $this->entityManager->find(Article::class, $id);
     }
 
-    public function getArticleByName(string $name): Article {
+    public function getArticleByName(string $name): Article
+    {
         return $this->entityManager->find(Article::class, $name);
     }
-    public function getArticleByCategory(string $category): Article {
+    public function getArticleByCategory(string $category): Article
+    {
         return $this->entityManager->find(Article::class, $category);
     }
-    public function getAllArticles(): array {
+    public function getAllArticles(): array
+    {
         return $this->entityManager->getRepository(Article::class)->findAll();
     }
 }

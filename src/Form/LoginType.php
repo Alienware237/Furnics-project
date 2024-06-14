@@ -12,21 +12,21 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class LoginType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('email', TextType::class, [
                 'required' => true,
                 'label' => 'Email'
             ])
-            ->add('password', PasswordType::class,[
+            ->add('password', PasswordType::class, [
                 'required' => true,
                 'label' => 'Password'
             ])
             ->add('submit', SubmitType::class, ['label' => 'Login']);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([]);
     }
