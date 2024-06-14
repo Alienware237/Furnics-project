@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <link rel="stylesheet" type="text/css" href="{{ asset('style.scss') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/user-register-form.scss') }}">
+    <h1>Register</h1>
+    <div class="contain">
+        {{ form_start(form) }}
+        {% for field in form %}
+            <div class="form-group">
+                {{ form_label(field) }}
+                {{ form_widget(field) }}
+            </div>
+        {% endfor %}
+        {{ form_end(form) }}
+    </div>
+
+    {% include 'footer/footer.html.twig' %}
+{% endblock %}

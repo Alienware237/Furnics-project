@@ -4,6 +4,7 @@ namespace okpt\furnics\project\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use DateTime;
+use DateTimeInterface;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use phpDocumentor\Reflection\Types\Integer;
@@ -14,13 +15,12 @@ class Comment
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $commentId = null;
 
-    #[ORM\OneToOne(targetEntity: User::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\Column(type: 'integer')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?int $userId;
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'comment')]
+    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: "user_id", nullable: false)]
+    private ?User $user = null;
 
     #[ORM\Column(type: 'text')]
     private string $commentText;
@@ -28,43 +28,46 @@ class Comment
     #[ORM\Column(type: 'text')]
     private string $userData;
 
-    #[ORM\ManyToOne(targetEntity: Article::class, cascade: ["persist", "remove", "update"])]
-    #[ORM\Column(type: 'integer')]
-    #[ORM\JoinColumn(nullable: false)]
-    private int $articleId;
+    #[ORM\ManyToOne(targetEntity: Article::class, inversedBy: 'comment')]
+    #[ORM\JoinColumn(name: 'article_id', referencedColumnName: "article_id", nullable: false)]
+    private ?Article $article = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $createdAt;
+    private DateTimeInterface $createdAt;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: false)]
-    private DateTime $updatedAt;
+    private DateTimeInterface $updatedAt;
+
+    public function __construct()
+    {
+        $this->createdAt = new \DateTime();
+        $this->updatedAt = new \DateTime();
+    }
 
     public function getCommentId(): ?int
     {
         return $this->commentId;
     }
 
-    public function getUserId(): ?int
+    public function getUser(): ?User
     {
-        return $this->userId;
+        return $this->user;
     }
 
-    public function setUserId(?int $userId): self
+    public function setUser(?User $user): self
     {
-        $this->userId = $userId;
-
+        $this->user = $user;
         return $this;
     }
 
-    public function getArticleId(): int
+    public function getArticle(): ?Article
     {
-        return $this->articleId;
+        return $this->article;
     }
 
-    public function setArticleId(int $articleId): self
+    public function setArticle(?Article $article): self
     {
-        $this->articleId = $articleId;
-
+        $this->article = $article;
         return $this;
     }
 
@@ -76,7 +79,6 @@ class Comment
     public function setCommentText(string $commentText): self
     {
         $this->commentText = $commentText;
-
         return $this;
     }
 
@@ -88,25 +90,28 @@ class Comment
     public function setUserData(string $userData): self
     {
         $this->userData = $userData;
-
         return $this;
     }
 
-    public function getCreatedAt(): DateTime {
+    public function getCreatedAt(): DateTimeInterface
+    {
         return $this->createdAt;
     }
 
-    public function setCreatedAt(DateTime $createdDate): static {
-        $this->createdAt = $createdDate;
+    public function setCreatedAt(DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
         return $this;
     }
 
-    public function getUpdatedAt(): DateTime {
+    public function getUpdatedAt(): DateTimeInterface
+    {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(DateTime $updatedDate): static {
-        $this->createdAt = $updatedDate;
+    public function setUpdatedAt(DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
         return $this;
     }
 }

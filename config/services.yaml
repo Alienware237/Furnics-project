@@ -4,22 +4,62 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    images_directory: '%kernel.project_dir%/public/uploads'
 
 services:
+    # Alias the UserProviderInterface to your custom provider
+    Symfony\Component\Security\Core\User\UserProviderInterface: '@security.user.provider.concrete.app_user_provider'
+
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
     okpt\furnics\project\:
         resource: '../src/'
+
         exclude:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
             - '../src/Tests/'
+
+    # Register the Filter as an Event Listener
+    okpt\furnics\project\AppBundle\Filters\RememberFilter:
+        arguments:
+            - '@doctrine.orm.entity_manager'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+
+    # okpt\furnics\project\EventListener\CartAddListener:
+    #    tags:
+    #        - { name: 'kernel.event_listener', event: 'cart.add', method: 'onCartAddEvent' }
+
+    okpt\furnics\project\Services\Security\AuthenticationService:
+        arguments:
+            $entityManager: '@okpt\furnics\project\Services\UserManager'
+            $requestStack: '@request_stack'
+            $tokenStorage: '@security.token_storage'
+            $userProvider: '@security.user_providers'
+
+    okpt\furnics\project\EventListener\RememberMeListener:
+        arguments:
+            - '@okpt\furnics\project\Services\UserManager'
+            - '@security.token_storage'
+            - '@security.user_providers'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+
+    okpt\furnics\project\Controller\CartController:
+        arguments:
+            $csrfTokenManager: '@security.csrf.token_manager'
+
+    okpt\furnics\project\Controller\CheckoutController:
+        arguments:
+            $ordersProcessStateMachine: '@state_machine.orders_process'
+
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

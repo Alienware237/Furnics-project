@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello SuccessPageController!{% endblock %}
+
+{% block body %}
+
+    <h1>Success!</h1>
+    <p>Your form has been submitted successfully.</p>
+    <p>{{ articleName }}</p>
+    <p>{{ sizeAndQuantities }}</p>
+    <p><a href="{{ path('article-form') }}">Back to Home</a></p>
+{% endblock %}

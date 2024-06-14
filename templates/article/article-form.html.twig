@@ -1,0 +1,20 @@
+{% for article in articles %}
+    <tr id="article_{{ article.articleId }}">
+        <td>{{ article.articleId }}</td>
+        <td>{{ article.articleName }}</td>
+        <td>{{ article.description }}</td>
+        <td>{{ article.articlePrice }}</td>
+        <td>{{ article.numberInStock }}</td>
+        <td>{{ article.articleCategory }}</td>
+        <td>
+            {% for image in article.articleImages %}
+                <img src="{{ asset(image) }}" alt="Image" style="max-width: 100px;">
+            {% endfor %}
+        </td>
+        <td>
+            <a href="{{ path('delete_article', {'id': article.articleId}) }}" class="btn btn-danger delete-article" data-article-id="{{ article.articleId }}">Delete</a>
+        </td>
+    </tr>
+
+    {% include 'footer/footer.html.twig' %}
+{% endfor %}

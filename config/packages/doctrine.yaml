@@ -27,8 +27,12 @@ doctrine:
 when@test:
     doctrine:
         dbal:
-            # "TEST_TOKEN" is typically set by ParaTest
-            dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+            dbname: furnicsApp_test
+            user: furnicsUser
+            password: 123
+            host: furnics-test-database
+            port: 3306
+            driver: pdo_mysql
 
 when@prod:
     doctrine:

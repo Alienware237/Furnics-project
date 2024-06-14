@@ -34,7 +34,6 @@ services:
   furnics-database:
     image: mysql:${MYSQL_VERSION:-latest}
     container_name: furnics-mysql-dwh
-    command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
       MYSQL_DATABASE: "furnicsApp"
@@ -47,6 +46,24 @@ services:
       - "3308:3306"
     volumes:
       - furnics_dwh:/var/lib/mysql
+    networks:
+      - furnics-project
+
+  furnics-test-database:
+    image: mysql:${MYSQL_VERSION:-latest}
+    container_name: furnics-mysql-test
+    restart: always
+    environment:
+      MYSQL_DATABASE: "furnicsApp_test"
+      MYSQL_USER: "furnicsUser"
+      MYSQL_PASSWORD: "123"
+      MYSQL_ROOT_PASSWORD: "root"
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "--silent" ]
+    ports:
+      - "3309:3306"
+    volumes:
+      - furnics_test_dwh:/var/lib/mysql
     networks:
       - furnics-project
 
@@ -68,4 +85,5 @@ services:
 volumes:
 ###> doctrine/doctrine-bundle ###
   furnics_dwh:
-###< doctrine/doctrine-bundle ###
+
+  furnics_test_dwh:
