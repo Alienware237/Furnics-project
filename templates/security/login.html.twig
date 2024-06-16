@@ -29,6 +29,14 @@
                 {{ form_widget(field) }}
             </div>
         {% endfor %}
+        <p  style="margin-left: auto;">No Account? <br> Click
+            <a class="modal-link" style="font-weight: bold; color: initial;" href="{{ path('app_user_register') }}">
+                <svg class="user-icon" width="18" height="18" data-toggle="modal" data-target="#exampleModal">
+                    <use xlink:href="#door"></use>
+                </svg>
+                here
+            </a>
+        </p>
         {{ form_end(form) }}
 
         {% if error %}
@@ -36,26 +44,5 @@
         {% endif %}
     </div>
 
-    <!-- Modal -->
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    ...
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {% include 'footer/footer.html.twig' %}
+    <!--{% include 'footer/footer.html.twig' %}-->
 {% endblock %}
