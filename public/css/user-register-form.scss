@@ -51,7 +51,7 @@ h1{
       margin-bottom: 0;
     }
 
-    button[type="submit"] {
+    button[type="submit"]{
       padding: 10px 20px;
       font-size: 16px;
       font-weight: bold;
@@ -70,6 +70,22 @@ h1{
         outline: 0;
         box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
       }
+    }
+
+    a {
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+      &:hover {
+        background-color: #787d62;
+      }
+
+      &:focus {
+        outline: 0;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+      }
+
     }
   }
 }

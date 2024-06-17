@@ -34,6 +34,8 @@ final class CartAddListener
         $articleId = $event->getArticleId();
         $userEmail = $event->getUserEmail();
 
+        echo "ArticleId: ";
+        print_r($articleId);
         // Logic to add the article to the user's cart
         $user = $this->entityManager->getRepository(User::class)->findBy(['email' => $userEmail]);
         $article = $this->entityManager->getRepository(Article::class)->findOneBy(['articleId' => $articleId]);
@@ -54,6 +56,15 @@ final class CartAddListener
         if (!$article) {
             // Handle the case where the article does not exist
             $this->logger->error("Article $articleId not found.");
+            return;
+        }
+
+        $item = $this->entityManager->getRepository(CartItem::class)->findOneBy(['article' => $article]);
+        //Check if The article Exist in the Cart and just increment the quantity
+        if ($item) {
+            $item->setQuantity($item->getQuantity() + 1);
+            $this->entityManager->persist($cart);
+            $this->entityManager->flush();
             return;
         }
 
