@@ -69,114 +69,92 @@ class ArticleController extends AbstractController
         return new Response('Article created successfully!');
     }
 
-    #[Route('/article-form', name: 'article-form')]
-    public function articleForm(Request $request, SluggerInterface $slugger)
+    #[Route('/article-form', name: 'article_form')]
+    public function articleForm(Request $request, SluggerInterface $slugger, LoggerInterface $logger)
     {
         // Create a new article object
         $article = new Article();
 
-        // Create the article form
-        $form = $this->createForm(ArticleType::class, $article);
+        if ($request->isMethod('POST')) {
+            // Extract form data from request
+            $articleName = $request->get('articleName');
+            $description = $request->get('description');
+            $articlePrice = $request->get('articlePrice');
+            $articleCategory = $request->get('articleCategory');
+            $categoryDescription = $request->get('categoryDescription');
+            $sizeAndQuantities = $request->get('sizeAndQuantities', []);
+            $descriptions['description'] = $description;
+            $descriptions['sizeAndQuantity'] = $sizeAndQuantities;
 
-        // Handle the form submission
-        $form->handleRequest($request);
-
-        //print_r($article);
-
-        // Check if the form is submitted and valid
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Retrieve the form data
-            $articleName = $form->get('articleName')->getData();
-            $description = $form->get('description')->getData();
-            $articleImages = $form->get('articleImages')->getData();
-            $sizeAndQuantities = $form->get('sizeAndQuantities')->getData();
-            $uploadedFilenames = [];
-
-            $article->setArticleName($articleName);
-            $article->setDescription($description);
-            $article->setArticleImages($articleImages);
-            $article->setSizeAndQuantities($sizeAndQuantities);
-
-            // Access the files from the request
-            $files = $request->files->get('articleImage');
-
-            echo 'form is submitted';
-            if (!$files) {
-                return new JsonResponse(['error' => 'No files uploaded'], 400);
+            // Validate required fields
+            if (!$articleName || !$description || !$articlePrice || !$articleCategory) {
+                return new JsonResponse(['error' => 'Required fields are missing.'], 400);
             }
 
-            // this condition is needed because the 'brochure' field is not required
-            // so the PDF file must be processed only when a file is uploaded
-            foreach ($files as $articleImage) {
-                //print_r($articleImages);
-                if ($articleImage) {
-                    $originalFilename = pathinfo($articleImage->getClientOriginalName(), PATHINFO_FILENAME);
-                    // this is needed to safely include the file name as part of the URL
-                    //$safeFilename = $slugger->slug($originalFilename);
-                    $newFilename = md5(uniqid()).'.'.$articleImage->guessExtension();
+            // Set values on article object
+            $article->setArticleName($articleName);
+            $article->setDescription(json_encode($descriptions));
+            $article->setArticlePrice((float)$articlePrice);
+            $article->setArticleCategory($articleCategory);
+            $article->setCategoryDescription($categoryDescription);
+            //$article->setSizeAndQuantities($sizeAndQuantities);
 
-                    // Move the file to the directory where brochures are stored
-                    try {
-                        $articleImage->move(dirname(__DIR__).'/../public/uploads', $newFilename);
-                        $uploadedFilenames[] = $newFilename;
-                    } catch (FileException $e) {
-                        // ... handle exception if something happens during file upload
-                        return new JsonResponse(['error' => 'Failed to upload image: ' . $e->getMessage()], 500);
-                        //print_r('Error by store the image: ' . $e->getMessage());
+            // Handle file uploads
+            $uploadedFilenames = [];
+            $files = $request->files->get('articleImages');
+
+
+            if ($files) {
+                foreach ($files as $file) {
+                    //print_r($file);
+                    if ($file) {
+                        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                        $newFilename = md5(uniqid()) . '.' . $file->guessExtension();
+
+                        try {
+                            $file->move(dirname(__DIR__) . '/../public/uploads', $newFilename);
+                            $uploadedFilenames[] = 'uploads/' . $newFilename;
+                        } catch (FileException $e) {
+                            return new JsonResponse(['error' => 'Failed to upload image: ' . $e->getMessage()], 500);
+                        }
                     }
-
-                    // updates the 'brochureFilename' property to store the PDF file name
-                    // instead of its contents
-                    $article->setArticleImages($uploadedFilenames);
                 }
             }
 
+            // Set uploaded filenames on article
+            if (!empty($uploadedFilenames)) {
+                $article->setArticleImages(json_encode($uploadedFilenames));
+            }
 
-            // Log the form data
-            $this->logger->info("ArticleName: " . $articleName . ", ArticleDescription: " . $description);
+            // Log form data
+            $logger->info("ArticleName: " . $articleName . ", Description: " . $description);
 
-            // Save the form data to a file
+            // Save the form data to a log file
             $filesystem = new Filesystem();
             try {
-                $filesystem->dumpFile('Logs/logsfile.txt', $articleName . " " . $description);
-            } catch (IOExceptionInterface $IOException) {
-                $this->logger->error("An error occurred while creating the directory: " . $IOException->getMessage());
+                $filesystem->appendToFile('logs/logfile.txt', $articleName . " " . $description . PHP_EOL);
+            } catch (IOExceptionInterface $exception) {
+                $logger->error("An error occurred while writing to the file: " . $exception->getMessage());
             }
 
-            $routeName = 'success-route'; // Replace with your actual route name
-            $routeParams = [
-                'articleName' => $articleName,
-                'description' => $description,
-                'articleImages' => $articleImages,
-                'sizeAndQuantities' => $sizeAndQuantities
-            ];
+            // Persist article to database
+            $this->entityManager->persist($article);
+            $this->entityManager->flush();
 
-            // Print uploaded image paths
-            $uploadedFilePaths = [];
-            foreach ($uploadedFilenames as $filename) {
-                $uploadedFilePaths[] = dirname(__DIR__).'/../public/uploads' . '/' . $filename;
-            }
-
-            //print_r('articleName from post', $_POST['articleName']);
-            // Redirect to the success route
-
-            // Handle file uploads
-            // Assuming your form data also contains files
-            $uploadedFiles = $request->files->all();
             return new JsonResponse([
                 'success' => 'Article created successfully',
-                'files' => $uploadedFiles
+                'files' => $uploadedFilenames
             ]);
         }
 
-        // Render the form template
+        // Render the form template for GET request
         return $this->render('Forms/article-form.html.twig', [
-            'form' => $form->createView(),
             'controller_name' => 'ArticleController',
         ]);
     }
 
-    #[Route('/success', name: 'success-route')]
+
+    #[Route('/success', name: 'success_route')]
     public function successRoute(Request $request): Response
     {
         //print_r($request);

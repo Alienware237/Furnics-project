@@ -26,9 +26,6 @@ class ArticleType extends AbstractType
             ->add('articlePrice', NumberType::class, [
                 'required' => true,
             ])
-            ->add('numberInStock', NumberType::class, [
-                'required' => true,
-            ])
             ->add('articleCategory', TextType::class, [
                 'required' => true,
             ])
@@ -41,28 +38,6 @@ class ArticleType extends AbstractType
                 'allow_delete' => true,
                 'by_reference' => false,
                 'required' => false,
-            ])
-            //->addEventSubscriber(new AddNameFieldSubscriber())
-            ->add('articleImages', FileType::class, [
-                'label' => 'Article Images (PNG, JPG, JPEG files)',
-                'mapped' => false,
-                'required' => false,
-                'multiple' => true,
-                'attr' => [
-                    'id' => 'file-input',
-                    'accept' => 'image/*',
-                ],
-                'constraints' => [
-                    new \Symfony\Component\Validator\Constraints\File([
-                        'maxSize' => '1024k',
-                        'mimeTypes' => [
-                            'image/png',
-                            'image/jpeg',
-                            'image/jpg',
-                        ],
-                        'mimeTypesMessage' => 'Please upload a valid image file (PNG, JPEG).',
-                    ])
-                ],
             ])
             // ...
         ;

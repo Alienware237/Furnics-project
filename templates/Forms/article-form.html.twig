@@ -1,70 +1,61 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <title>Edit Product Form</title>
-    <link rel="stylesheet" type="text/css" href="{{ asset('style.scss') }}">
+    <title>Create New Product</title>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/style.scss') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('css/article-form.scss') }}">
-    <h1>Create new Product</h1>
+    <h1>Create New Product</h1>
 
-    <div class="container">
-        {{ form_start(form, { 'attr': { 'id': 'article-form' } }) }}
-
-        <div>
-            {{ form_label(form.articleName) }}
-            {{ form_widget(form.articleName) }}
-            {{ form_errors(form.articleName) }}
-        </div>
-
-        <div>
-            {{ form_label(form.description) }}
-            {{ form_widget(form.description) }}
-            {{ form_errors(form.description) }}
-        </div>
-
-        <div>
-            {{ form_label(form.articlePrice) }}
-            {{ form_widget(form.articlePrice) }}
-            {{ form_errors(form.articlePrice) }}
-        </div>
-
-        <div>
-            {{ form_label(form.articleCategory) }}
-            {{ form_widget(form.articleCategory) }}
-            {{ form_errors(form.articleCategory) }}
-        </div>
-
-        <div>
-            {{ form_label(form.numberInStock) }}
-            {{ form_widget(form.numberInStock) }}
-            {{ form_errors(form.numberInStock) }}
-        </div>
-
-        <div>
-            <div id="size-container">
-                {% for sizeAndQuantity in form.sizeAndQuantities %}
-                    <div>
-                        {{ form_row(sizeAndQuantity.size) }}
-                        {{ form_row(sizeAndQuantity.quantity) }}
-                    </div>
-                {% endfor %}
-                <button id="add-size" type="button">Add Size</button>
-                <button id="remove-size" type="button">Remove Last Size</button>
-                {{ form_errors(form.sizeAndQuantities) }}
+    <div class="container" data-insert-url="{{ path('article_form') }}">
+        <form id="article-form" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="articleName">Article Name</label>
+                <input type="text" id="articleName" name="articleName" class="form-control" required>
+                <div class="invalid-feedback"></div>
             </div>
-        </div>
 
-        <div id="drop-zone" class="drop-zone">
-            <p>Drag & drop images here or click to select</p>
-            {{ form_widget(form.articleImages) }}
-            {{ form_errors(form.articleImages) }}
-        </div>
+            <div class="form-group">
+                <label for="description">Description</label>
+                <input type="text" id="description" name="description" class="form-control" required>
+                <div class="invalid-feedback"></div>
+            </div>
 
-        <div>
-            <button type="submit">Submit</button>
-        </div>
+            <div class="form-group">
+                <label for="articlePrice">Article Price</label>
+                <input type="number" id="articlePrice" name="articlePrice" class="form-control" required>
+                <div class="invalid-feedback"></div>
+            </div>
 
-        {{ form_end(form) }}
+            <div class="form-group">
+                <label for="articleCategory">Article Category</label>
+                <input type="text" id="articleCategory" name="articleCategory" class="form-control" required>
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="categoryDescription">Category Description</label>
+                <input type="text" id="categoryDescription" name="categoryDescription" class="form-control" required>
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div id="size-container" class="form-group">
+                <!-- Dynamic size and quantity inputs will be added here -->
+                <button id="add-size" type="button" class="btn btn-primary">Add Size</button>
+                <button id="remove-size" type="button" class="btn btn-danger">Remove Last Size</button>
+            </div>
+
+            <div id="drop-zone" class="drop-zone form-group">
+                <p>Drag & drop images here or click to select</p>
+                <input type="file" id="file-input" name="articleImages[]" class="form-control" accept="image/*" multiple>
+                <div class="invalid-feedback"></div>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </div>
+        </form>
     </div>
+
 
     {% include 'footer/footer.html.twig' %}
 
