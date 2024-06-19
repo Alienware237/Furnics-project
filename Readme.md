@@ -43,6 +43,18 @@ apt-get install vim
 
 Ensure directory permissions and ownership are correctly set to allow image uploads by the admin.
 
+Create the Directory:
+```
+mkdir -p /var/www/html/public/uploads
+```
+
+Set the Correct Permissions:
+```
+chown -R www-data:www-data /var/www/html/public/uploads
+chmod -R 775 /var/www/html/public/uploads
+```
+
+
 ### Database Setup
 
 Create the database:

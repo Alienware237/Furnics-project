@@ -197,6 +197,39 @@
       <path value="$PROJECT_DIR$/vendor/symfony/browser-kit" />
       <path value="$PROJECT_DIR$/vendor/symfony/css-selector" />
       <path value="$PROJECT_DIR$/vendor/symfony/dom-crawler" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/fidry/cpu-core-counter" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/clue/ndjson-react" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/psr/event-dispatcher" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/psr/container" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/react/stream" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/react/dns" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/react/socket" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/react/child-process" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/deprecation-contracts" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/react/promise" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/react/event-loop" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/react/cache" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/finder" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/polyfill-intl-normalizer" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/polyfill-mbstring" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/polyfill-ctype" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/filesystem" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/event-dispatcher-contracts" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/polyfill-php81" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/stopwatch" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/console" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/service-contracts" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/string" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/event-dispatcher" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/polyfill-php80" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/process" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/options-resolver" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/symfony/polyfill-intl-grapheme" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/sebastian/diff" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/evenement/evenement" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/friendsofphp/php-cs-fixer" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/composer" />
+      <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/psr/log" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1" />
