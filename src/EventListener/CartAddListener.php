@@ -34,8 +34,6 @@ final class CartAddListener
         $articleId = $event->getArticleId();
         $userEmail = $event->getUserEmail();
 
-        echo "ArticleId: ";
-        print_r($articleId);
         // Logic to add the article to the user's cart
         $user = $this->entityManager->getRepository(User::class)->findBy(['email' => $userEmail]);
         $article = $this->entityManager->getRepository(Article::class)->findOneBy(['articleId' => $articleId]);

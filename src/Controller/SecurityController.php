@@ -53,9 +53,14 @@ class SecurityController extends AbstractController
             if ($user && $passwordEncoder->isPasswordValid($user, $password)) {
                 $response = new Response();
 
-                $this->authenticationService->signIn($user, true, $response);
+                $this->authenticationService->signIn($user, $response, true);
 
-                return $this->redirectToRoute('app_index');
+                // Check user roles and redirect accordingly
+                if (in_array('ROLE_ADMIN', $user->getRoles())) {
+                    return $this->redirectToRoute('article_form');
+                } else {
+                    return $this->redirectToRoute('app_index');
+                }
             }
             $this->addFlash('error', 'Invalid credentials');
         }
