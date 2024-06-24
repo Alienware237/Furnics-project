@@ -2,18 +2,15 @@
 
 namespace okpt\furnics\project\Services\Security;
 
-use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Services\UserManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpFoundation\Cookie;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 
 class AuthenticationService
 {
@@ -33,7 +30,7 @@ class AuthenticationService
         $this->logger = $logger;
     }
 
-    public function signIn(User $user, bool $remember = false, Response $response)
+    public function signIn(User $user, Response $response, bool $remember = false)
     {
         // Set the authentication token
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());

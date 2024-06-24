@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+//use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ArticleController extends AbstractController
@@ -83,8 +85,10 @@ class ArticleController extends AbstractController
             $articleCategory = $request->get('articleCategory');
             $categoryDescription = $request->get('categoryDescription');
             $sizeAndQuantities = $request->get('sizeAndQuantities', []);
-            $descriptions['description'] = $description;
-            $descriptions['sizeAndQuantity'] = $sizeAndQuantities;
+            $descriptions = [
+                'description' => $description,
+                'sizeAndQuantity' => $sizeAndQuantities
+            ];
 
             // Validate required fields
             if (!$articleName || !$description || !$articlePrice || !$articleCategory) {
@@ -106,7 +110,6 @@ class ArticleController extends AbstractController
 
             if ($files) {
                 foreach ($files as $file) {
-                    //print_r($file);
                     if ($file) {
                         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
                         $newFilename = md5(uniqid()) . '.' . $file->guessExtension();
@@ -157,15 +160,11 @@ class ArticleController extends AbstractController
     #[Route('/success', name: 'success_route')]
     public function successRoute(Request $request): Response
     {
-        //print_r($request);
         // Retrieve the form data from route parameters
         $articleName = $request->query->get('articleName');
         $description = $request->query->get('description');
         $articleImages = $request->query->get('articleImages');
         $sizeAndQuantities = $request->query->get('sizeAndQuantities');
-        print_r($articleImages);
-        print_r($sizeAndQuantities);
-        print_r($articleName);
 
         return $this->render('success_page/index.html.twig', [
             'articleName' => $articleName,
@@ -208,7 +207,6 @@ class ArticleController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         $this->logger->debug(json_encode($data));
-        //print_r($data);
         $articleId = $data['articleId'];
         $action = $data['action'];
 
@@ -251,8 +249,6 @@ class ArticleController extends AbstractController
         $articleId = $data['articleId'];
 
         $userEmail = $this->getUser()->getUserIdentifier();
-
-        //print_r($userEmail);
 
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
         $article = $this->entityManager->getRepository(Article::class)->find($articleId);

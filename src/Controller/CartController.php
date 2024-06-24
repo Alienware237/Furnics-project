@@ -51,6 +51,11 @@ class CartController extends AbstractController
 
         $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
 
+        if (in_array('ROLE_ADMIN', $user->getRoles())) {
+            // Redirect to Admin dashboard
+            return $this->redirectToRoute('article_form');
+        }
+
         $cart = $this->cartManager->getCart($user);
         $cart = is_array($cart) ? $cart[0] : $cart;
 

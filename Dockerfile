@@ -36,6 +36,7 @@ RUN composer install
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/var
+RUN chmod -R 775 var
 
 # die zu Symfony passende Configuration
 COPY docker/apache/000-default.conf /etc/apache2/sites-available/000-default.conf

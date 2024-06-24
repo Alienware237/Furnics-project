@@ -46,6 +46,7 @@ class UserManager
     }
     public function createUser(User $user): User
     {
+        $user->setRole('ROLE_USER');
         $this->entityManager->persist($user);
 
         $this->cartManager->createCart($user);
