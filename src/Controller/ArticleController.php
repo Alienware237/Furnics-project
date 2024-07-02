@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 //use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ArticleController extends AbstractController
@@ -71,11 +72,13 @@ class ArticleController extends AbstractController
         return new Response('Article created successfully!');
     }
 
-    #[Route('/article-form', name: 'article_form')]
+    #[Route('/admin', name: 'admin')]
     public function articleForm(Request $request, SluggerInterface $slugger, LoggerInterface $logger)
     {
-        // Create a new article object
-        $article = new Article();
+        // ================================= List of All Articles ======================================
+        $allArticles = $this->articleManager->getAllArticles();
+        $user = $this->getUser();
+
 
         if ($request->isMethod('POST')) {
             // Extract form data from request
@@ -87,6 +90,7 @@ class ArticleController extends AbstractController
             $sizeAndQuantities = $request->get('sizeAndQuantities', []);
             $descriptions = [
                 'description' => $description,
+                'categoryDescription' => $categoryDescription,
                 'sizeAndQuantity' => $sizeAndQuantities
             ];
 
@@ -95,20 +99,57 @@ class ArticleController extends AbstractController
                 return new JsonResponse(['error' => 'Required fields are missing.'], 400);
             }
 
-            // Set values on article object
-            $article->setArticleName($articleName);
-            $article->setDescription(json_encode($descriptions));
-            $article->setArticlePrice((float)$articlePrice);
-            $article->setArticleCategory($articleCategory);
-            $article->setCategoryDescription($categoryDescription);
-            //$article->setSizeAndQuantities($sizeAndQuantities);
+            $action = 'created';
 
-            // Handle file uploads
-            $uploadedFilenames = [];
+            // Create a new Article Entity
+            $article = new Article();
+
+            $articleId = $request->get('articleId');
+
+            if ($articleId) {
+                // Article exist in the DB; just edit it !
+                $article = $this->entityManager->getRepository(Article::class)->find($articleId);
+
+                $action = 'updated';
+            }
+
             $files = $request->files->get('articleImages');
 
 
             if ($files) {
+                //Article exists in the DB and has been edited or
+                // the article is new and its photos arrived with the request
+                // else article exists but has not been modified in any way linked
+                // to its images
+
+                // Handle file uploads
+                $uploadedFilenames = [];
+
+                if($articleId) {
+                    // Initialize Symfony Filesystem component
+                    $filesystem = new Filesystem();
+
+                    // Define the uploads directory path
+                    $uploadsDirectory = dirname(__DIR__) . '/../public';
+
+                    $oldFilenames = json_decode($article->getArticleImages());
+
+                    // Iterate through each uploaded filename and delete the corresponding file
+                    foreach ($oldFilenames as $filename) {
+                        $filePath = $uploadsDirectory . '/' . basename($filename);
+
+                        try {
+                            // Check if file exists before attempting to delete
+                            if ($filesystem->exists($filePath)) {
+                                $filesystem->remove($filePath);
+                            }
+                        } catch (IOExceptionInterface $e) {
+                            return new JsonResponse(['error' => 'Failed to delete image: ' . $e->getMessage()], 500);
+                        }
+                    }
+                }
+
+                // Insert new files
                 foreach ($files as $file) {
                     if ($file) {
                         $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
@@ -122,12 +163,17 @@ class ArticleController extends AbstractController
                         }
                     }
                 }
-            }
-
-            // Set uploaded filenames on article
-            if (!empty($uploadedFilenames)) {
+                // Set uploaded filenames on article
                 $article->setArticleImages(json_encode($uploadedFilenames));
             }
+
+            // Set values on article object
+            $article->setArticleName($articleName);
+            $article->setDescription(json_encode($descriptions));
+            $article->setArticlePrice((float)$articlePrice);
+            $article->setArticleCategory($articleCategory);
+            $article->setCategoryDescription($categoryDescription);
+            //$article->setSizeAndQuantities($sizeAndQuantities);
 
             // Log form data
             $logger->info("ArticleName: " . $articleName . ", Description: " . $description);
@@ -145,14 +191,14 @@ class ArticleController extends AbstractController
             $this->entityManager->flush();
 
             return new JsonResponse([
-                'success' => 'Article created successfully',
-                'files' => $uploadedFilenames
+                'success' => 'Article ' . $action . ' successfully'
             ]);
         }
 
         // Render the form template for GET request
-        return $this->render('Forms/article-form.html.twig', [
+        return $this->render('admin/admin.html.twig', [
             'controller_name' => 'ArticleController',
+            'articles' => $allArticles
         ]);
     }
 
@@ -174,31 +220,39 @@ class ArticleController extends AbstractController
         ]);
     }
 
-    public function showArticles(): Response
+    #[Route('/all-articles', name: 'get_all_articles')]
+    public function showArticles(): JsonResponse
     {
-        $entityManager = $this->getDoctrine()->getManager();
-        $articles = $entityManager->getRepository(Article::class)->findAll();
+        $articles = $this->entityManager->getRepository(Article::class)->findAll();
+        $data = [];
 
-        return $this->render('articles.html.twig', [
-            'articles' => $articles,
-        ]);
+        foreach ($articles as $article) {
+            $data[] = [
+                'articleId' => $article->getArticleId(),
+                'articleName' => $article->getArticleName(),
+                'articlePrice' => $article->getArticlePrice(),
+                'descriptions' => $article->getDescription(),
+                'articleImages' => $article->getArticleImages(),
+                'articleCategory' => $article->getArticleCategory(),
+                'categoryDescription' => $article->getCategoryDescription()
+            ];
+        }
+
+        return new JsonResponse($data);
     }
 
     // Controller action for deleting an article
     #[Route('article/delete/{id}', name: 'delete_article')]
-    public function deleteArticle($id): Response
+    public function deleteArticle($id): JsonResponse
     {
         //$articleId = $request->query->get('id');
-        echo "Article to deleted: " . $id;
-        $response = $this->articleManager->deleteArticle($id);
-        echo "Response: ";
-        var_dump($response);
-
-        // Return a response indicating success or failure
-        if ($response) {
-            return new Response('Article deleted successfully');
-        } else {
-            return new Response('Failed to delete article', 500); // 500 is the status code for internal server error
+        $article = $this->entityManager->getRepository(Article::class)->find($id);
+        //echo "Article to deleted: " . $id;
+        try {
+            $this->articleManager->deleteArticle($article);
+            return new JsonResponse(['message' => 'Article deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Failed to delete article: ' . $e->getMessage()], 500);
         }
     }
 

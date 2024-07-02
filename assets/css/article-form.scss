@@ -2,7 +2,7 @@
 
 /* Container for the form */
 .container {
-  max-width: 600px;
+  //max-width: 600px;
   margin: 0 auto;
   padding: 20px;
   background-color: #f7f7f7;
@@ -88,3 +88,26 @@ button:hover {
 .drag-over {
   background-color: #f0f0f0;
 }
+
+
+
+.card-body {
+  padding: 1.25rem;
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+  padding-top: 60px;
+  font-size: 13px;
+  transition: all .3s;
+  border-top: 1px solid #ebebeb;
+  width: 75%;
+  margin: auto;
+  color: rgba(169, 175, 187, 0.82);
+  border-color: rgba(181, 181, 181, 0.1) !important;
+}
+
+/* table-responsive */
+.table-responsive {
+  width: 100% !important;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: -ms-autohiding-scrollbar; }

@@ -75,8 +75,14 @@ Insert sample articles into the database:
 ```
 php bin/console app:create-article
 ```
+Insert sample admin into the database:
+```
+php bin/console app:create-admin-user
+```
+
 ### Accessing the Application
 
+#### As User
 an error may occur. Ignore it and simply continue with the next step
 
 - Open your web browser and navigate to: http://localhost:8094/index.php/index
@@ -85,11 +91,20 @@ an error may occur. Ignore it and simply continue with the next step
 So please start by registering by browsing: http://localhost:8094/index.php/user/register
 
 
-To verify if the authentication and role-based access control are working correctly in the main environment, you should set the APP_ENV environment variable to prod in the file .htaccess by inserting following :
+#### As Administrator
+- Open your web browser and navigate to: http://localhost:8094/index.php/article-form
+
+You will be redirected to the login page:
 
 ```
-SetEnv APP_ENV prod
-SetEnv APP_DEBUG 0
+Email: admin@example.com
+Password: adminpassword
+```
+
+To verify if the authentication and role-based access control are working correctly in the main environment, you should set the APP_ENV environment variable to main in the file .env as following :
+
+```
+APP_ENV=main
 ```
 
 

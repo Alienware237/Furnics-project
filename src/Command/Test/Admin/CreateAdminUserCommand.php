@@ -17,7 +17,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 )]
 class CreateAdminUserCommand extends Command
 {
-
     private $entityManager;
     private $passwordEncoder;
 

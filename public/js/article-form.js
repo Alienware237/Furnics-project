@@ -88,7 +88,6 @@ function handleImageDrop() {
 function handleSizeQuantityFields() {
     const addButton = document.getElementById('add-size');
     const removeButton = document.getElementById('remove-size');
-    const sizeContainer = document.getElementById('size-container');
     let sizeIndex = document.querySelectorAll('#size-container input[type="text"]').length;
 
     addButton.addEventListener('click', function (e) {
@@ -101,31 +100,38 @@ function handleSizeQuantityFields() {
         removeLastSizeQuantityFields();
         sizeIndex--;
     });
+}
 
-    function addSizeQuantityFields(index) {
-        const newSizeInput = document.createElement('input');
-        newSizeInput.type = 'text';
-        newSizeInput.name = `sizeAndQuantities[${index}][size]`;
-        newSizeInput.placeholder = 'Size';
+function addSizeQuantityFields(index, value = { size: '', quantity: '' }) {
+    const sizeContainer = document.getElementById('size-container');
 
-        const newQuantityInput = document.createElement('input');
-        newQuantityInput.type = 'number';
-        newQuantityInput.name = `sizeAndQuantities[${index}][quantity]`;
-        newQuantityInput.placeholder = 'Quantity';
+    const newSizeInput = document.createElement('input');
+    newSizeInput.type = 'text';
+    newSizeInput.name = `sizeAndQuantities[${index}][size]`;
+    newSizeInput.placeholder = 'Size';
+    newSizeInput.value = value.size;
 
-        sizeContainer.appendChild(newSizeInput);
-        sizeContainer.appendChild(newQuantityInput);
-    }
+    const newQuantityInput = document.createElement('input');
+    newQuantityInput.type = 'number';
+    newQuantityInput.name = `sizeAndQuantities[${index}][quantity]`;
+    newQuantityInput.placeholder = 'Quantity';
+    newQuantityInput.value = value.quantity;
 
-    function removeLastSizeQuantityFields() {
-        const inputs = sizeContainer.querySelectorAll('input');
-        if (inputs.length >= 2) {
-            inputs[inputs.length - 1].remove();
-            inputs[inputs.length - 2].remove();
-        }
+    sizeContainer.appendChild(newSizeInput);
+    sizeContainer.appendChild(newQuantityInput);
+}
+
+function removeLastSizeQuantityFields() {
+    const sizeContainer = document.getElementById('size-container');
+    const removeButton = document.getElementById('remove-size');
+    const inputs = sizeContainer.querySelectorAll('input');
+    if (inputs.length >= 2) {
+        inputs[inputs.length - 1].remove();
+        inputs[inputs.length - 2].remove();
     }
 }
 
+let editArticleId = null;
 function handleFormSubmission() {
     const container = $('div[data-insert-url]');
     const insertUrl = container.data('insert-url');
@@ -140,10 +146,12 @@ function handleFormSubmission() {
             formData.append(this.name, this.value);
         });
 
-        // Log the FormData object for debugging purposes
-        for (let pair of formData.entries()) {
-            console.log(pair[0] + ', ' + pair[1]);
+        // Append the editArticleId to formData if it exists
+        if (editArticleId != null) {
+            formData.append('articleId', editArticleId);
         }
+
+        editArticleId = null;
 
         $.ajax({
             url: insertUrl, // Adjust the path to your route
@@ -155,6 +163,14 @@ function handleFormSubmission() {
                 // Handle the success response here
                 console.log('Form submitted successfully:', response);
                 alert('Form submitted successfully!');
+                // Close the Bootstrap modal
+                $('#editProductModal').modal('hide');
+
+                // Remove the modal backdrop manually
+                $('.modal-backdrop').remove();
+
+                // Reload the page
+                location.reload();
             },
             error: function (xhr, status, error) {
                 // Handle the error response here
@@ -189,3 +205,108 @@ function handleArticleDeletion() {
         });
     });
 }
+
+
+/* ============================================================================================================= */
+document.addEventListener('DOMContentLoaded', function() {
+    const sizeContainer = document.getElementById('size-container');
+    let articles;
+
+    const container = $('div[data-articles-url]');
+    const getArticleUrl = container.data('articles-url');
+
+    $.ajax({
+        url: getArticleUrl,
+        method: 'GET',
+        contentType: 'application/json',
+        dataType: 'json',
+        success: function(data) {
+            //console.log("Fetched Articles:", data);
+            articles = data;
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching articles:', error);
+        }
+    })
+
+    //const formContainer = document.getElementById('article-form-container');
+    //formContainer.style.display = 'none';
+
+    // Event listener for modal close event
+    $('#editProductModal').on('hidden.bs.modal', function (e) {
+        clearSizeContainer(); // Clear size container when modal is closed
+    });
+
+// Clear size container function (remove input elements only)
+    function clearSizeContainer() {
+        // Select all input elements inside sizeContainer and remove them
+        const inputs = sizeContainer.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.parentNode.removeChild(input); // Remove each input element
+        });
+    }
+
+    function populateForm(articleId) {
+        let article = articles.filter(elm => elm.articleId == articleId);
+        let articleDescriptions = (JSON.parse(article[0].descriptions));
+        let descriptions = articleDescriptions.description ? articleDescriptions.description : '';
+        let sizeAndQuantity = articleDescriptions.sizeAndQuantity ? articleDescriptions.sizeAndQuantity : '';
+        article['description'] = descriptions;
+        article['sizeAndQuantity'] = sizeAndQuantity
+        document.getElementById('articleName').value = article.articleName;
+        document.getElementById('articleName').value = article[0].articleName;
+        document.getElementById('description').value = article.description; // Adjust if needed
+        document.getElementById('articlePrice').value = article[0].articlePrice;
+        document.getElementById('articleCategory').value = article[0].articleCategory;
+        document.getElementById('categoryDescription').value = articleDescriptions.categoryDescription;
+
+        let sizeIndex = 0;
+
+        if (sizeAndQuantity) {
+            for (let i= 0; i<sizeAndQuantity.length; i++) {
+
+                // Adding a new field with provided values
+                addSizeQuantityFields(sizeIndex++, { size: sizeAndQuantity[i].size, quantity: sizeAndQuantity[i].quantity });
+            }
+        }
+    }
+
+    document.querySelectorAll('.js-edit-product').forEach(button => {
+        button.addEventListener('click', function(event) {
+            event.preventDefault();
+            editArticleId = button.dataset.articleId;
+
+            populateForm(editArticleId);
+            $('#editProductModal').modal('show');
+        });
+    });
+});
+
+
+// Delete Article in the list
+
+$(document).ready(function() {
+    $('.js-remove-product').on('click', function(e) {
+        e.preventDefault();
+
+        let deleteArticleUrl = $(this).data('delete-url');
+        var articleId = $(this).data('article-id');
+        var row = $(this).closest('tr');
+
+        if (confirm('Are you sure you want to delete this article?')) {
+            $.ajax({
+                url: deleteArticleUrl,
+                type: 'DELETE',
+                success: function(response) {
+                    // Remove the row from the table
+                    row.remove();
+                    alert('Article deleted successfully!');
+                },
+                error: function(xhr) {
+                    alert('Failed to delete article: ' + xhr.responseText);
+                }
+            });
+        }
+    });
+});
+
