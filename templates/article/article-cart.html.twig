@@ -23,8 +23,8 @@
                                 <li>{{ elm.description }}</li>
                             {% endif %}
                             {% if elm.sizeAndQuantity is defined %}
-                                {% for size, number in elm.sizeAndQuantity %}
-                                <li>Size: {{ size }}   Quantity: {{ number }}</li>
+                                {% for sizeElem in elm.sizeAndQuantity %}
+                                <li>Size: {{ sizeElem.size }}   Quantity: {{ sizeElem.quantity }}</li>
                                 {% endfor %}
                             {% endif %}
                             <li>Different Size of Bed</li>

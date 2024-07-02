@@ -42,6 +42,7 @@ class ArticleManager
     public function deleteArticle(Article $article): void
     {
         $this->entityManager->remove($article);
+        $this->entityManager->flush();
     }
 
     public function getArticleById(int $id): Article
