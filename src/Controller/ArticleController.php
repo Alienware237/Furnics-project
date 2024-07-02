@@ -20,6 +20,9 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+//use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Component\Serializer\Encoder\JsonDecode;
 use Symfony\Component\String\Slugger\SluggerInterface;
 
 class ArticleController extends AbstractController
@@ -69,125 +72,145 @@ class ArticleController extends AbstractController
         return new Response('Article created successfully!');
     }
 
-    #[Route('/article-form', name: 'article-form')]
-    public function articleForm(Request $request, SluggerInterface $slugger)
+    #[Route('/admin', name: 'admin')]
+    public function articleForm(Request $request, SluggerInterface $slugger, LoggerInterface $logger)
     {
-        // Create a new article object
-        $article = new Article();
-
-        // Create the article form
-        $form = $this->createForm(ArticleType::class, $article);
-
-        // Handle the form submission
-        $form->handleRequest($request);
-
-        //print_r($article);
-
-        // Check if the form is submitted and valid
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Retrieve the form data
-            $articleName = $form->get('articleName')->getData();
-            $description = $form->get('description')->getData();
-            $articleImages = $form->get('articleImages')->getData();
-            $sizeAndQuantities = $form->get('sizeAndQuantities')->getData();
-            $uploadedFilenames = [];
-
-            $article->setArticleName($articleName);
-            $article->setDescription($description);
-            $article->setArticleImages($articleImages);
-            $article->setSizeAndQuantities($sizeAndQuantities);
-
-            // Access the files from the request
-            $files = $request->files->get('articleImage');
-
-            echo 'form is submitted';
-            if (!$files) {
-                return new JsonResponse(['error' => 'No files uploaded'], 400);
-            }
-
-            // this condition is needed because the 'brochure' field is not required
-            // so the PDF file must be processed only when a file is uploaded
-            foreach ($files as $articleImage) {
-                //print_r($articleImages);
-                if ($articleImage) {
-                    $originalFilename = pathinfo($articleImage->getClientOriginalName(), PATHINFO_FILENAME);
-                    // this is needed to safely include the file name as part of the URL
-                    //$safeFilename = $slugger->slug($originalFilename);
-                    $newFilename = md5(uniqid()).'.'.$articleImage->guessExtension();
-
-                    // Move the file to the directory where brochures are stored
-                    try {
-                        $articleImage->move(dirname(__DIR__).'/../public/uploads', $newFilename);
-                        $uploadedFilenames[] = $newFilename;
-                    } catch (FileException $e) {
-                        // ... handle exception if something happens during file upload
-                        return new JsonResponse(['error' => 'Failed to upload image: ' . $e->getMessage()], 500);
-                        //print_r('Error by store the image: ' . $e->getMessage());
-                    }
-
-                    // updates the 'brochureFilename' property to store the PDF file name
-                    // instead of its contents
-                    $article->setArticleImages($uploadedFilenames);
-                }
-            }
+        // ================================= List of All Articles ======================================
+        $allArticles = $this->articleManager->getAllArticles();
+        $user = $this->getUser();
 
 
-            // Log the form data
-            $this->logger->info("ArticleName: " . $articleName . ", ArticleDescription: " . $description);
-
-            // Save the form data to a file
-            $filesystem = new Filesystem();
-            try {
-                $filesystem->dumpFile('Logs/logsfile.txt', $articleName . " " . $description);
-            } catch (IOExceptionInterface $IOException) {
-                $this->logger->error("An error occurred while creating the directory: " . $IOException->getMessage());
-            }
-
-            $routeName = 'success-route'; // Replace with your actual route name
-            $routeParams = [
-                'articleName' => $articleName,
+        if ($request->isMethod('POST')) {
+            // Extract form data from request
+            $articleName = $request->get('articleName');
+            $description = $request->get('description');
+            $articlePrice = $request->get('articlePrice');
+            $articleCategory = $request->get('articleCategory');
+            $categoryDescription = $request->get('categoryDescription');
+            $sizeAndQuantities = $request->get('sizeAndQuantities', []);
+            $descriptions = [
                 'description' => $description,
-                'articleImages' => $articleImages,
-                'sizeAndQuantities' => $sizeAndQuantities
+                'categoryDescription' => $categoryDescription,
+                'sizeAndQuantity' => $sizeAndQuantities
             ];
 
-            // Print uploaded image paths
-            $uploadedFilePaths = [];
-            foreach ($uploadedFilenames as $filename) {
-                $uploadedFilePaths[] = dirname(__DIR__).'/../public/uploads' . '/' . $filename;
+            // Validate required fields
+            if (!$articleName || !$description || !$articlePrice || !$articleCategory) {
+                return new JsonResponse(['error' => 'Required fields are missing.'], 400);
             }
 
-            //print_r('articleName from post', $_POST['articleName']);
-            // Redirect to the success route
+            $action = 'created';
 
-            // Handle file uploads
-            // Assuming your form data also contains files
-            $uploadedFiles = $request->files->all();
+            // Create a new Article Entity
+            $article = new Article();
+
+            $articleId = $request->get('articleId');
+
+            if ($articleId) {
+                // Article exist in the DB; just edit it !
+                $article = $this->entityManager->getRepository(Article::class)->find($articleId);
+
+                $action = 'updated';
+            }
+
+            $files = $request->files->get('articleImages');
+
+
+            if ($files) {
+                //Article exists in the DB and has been edited or
+                // the article is new and its photos arrived with the request
+                // else article exists but has not been modified in any way linked
+                // to its images
+
+                // Handle file uploads
+                $uploadedFilenames = [];
+
+                if($articleId) {
+                    // Initialize Symfony Filesystem component
+                    $filesystem = new Filesystem();
+
+                    // Define the uploads directory path
+                    $uploadsDirectory = dirname(__DIR__) . '/../public';
+
+                    $oldFilenames = json_decode($article->getArticleImages());
+
+                    // Iterate through each uploaded filename and delete the corresponding file
+                    foreach ($oldFilenames as $filename) {
+                        $filePath = $uploadsDirectory . '/' . basename($filename);
+
+                        try {
+                            // Check if file exists before attempting to delete
+                            if ($filesystem->exists($filePath)) {
+                                $filesystem->remove($filePath);
+                            }
+                        } catch (IOExceptionInterface $e) {
+                            return new JsonResponse(['error' => 'Failed to delete image: ' . $e->getMessage()], 500);
+                        }
+                    }
+                }
+
+                // Insert new files
+                foreach ($files as $file) {
+                    if ($file) {
+                        $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                        $newFilename = md5(uniqid()) . '.' . $file->guessExtension();
+
+                        try {
+                            $file->move(dirname(__DIR__) . '/../public/uploads', $newFilename);
+                            $uploadedFilenames[] = 'uploads/' . $newFilename;
+                        } catch (FileException $e) {
+                            return new JsonResponse(['error' => 'Failed to upload image: ' . $e->getMessage()], 500);
+                        }
+                    }
+                }
+                // Set uploaded filenames on article
+                $article->setArticleImages(json_encode($uploadedFilenames));
+            }
+
+            // Set values on article object
+            $article->setArticleName($articleName);
+            $article->setDescription(json_encode($descriptions));
+            $article->setArticlePrice((float)$articlePrice);
+            $article->setArticleCategory($articleCategory);
+            $article->setCategoryDescription($categoryDescription);
+            //$article->setSizeAndQuantities($sizeAndQuantities);
+
+            // Log form data
+            $logger->info("ArticleName: " . $articleName . ", Description: " . $description);
+
+            // Save the form data to a log file
+            $filesystem = new Filesystem();
+            try {
+                $filesystem->appendToFile('logs/logfile.txt', $articleName . " " . $description . PHP_EOL);
+            } catch (IOExceptionInterface $exception) {
+                $logger->error("An error occurred while writing to the file: " . $exception->getMessage());
+            }
+
+            // Persist article to database
+            $this->entityManager->persist($article);
+            $this->entityManager->flush();
+
             return new JsonResponse([
-                'success' => 'Article created successfully',
-                'files' => $uploadedFiles
+                'success' => 'Article ' . $action . ' successfully'
             ]);
         }
 
-        // Render the form template
-        return $this->render('Forms/article-form.html.twig', [
-            'form' => $form->createView(),
+        // Render the form template for GET request
+        return $this->render('admin/admin.html.twig', [
             'controller_name' => 'ArticleController',
+            'articles' => $allArticles
         ]);
     }
 
-    #[Route('/success', name: 'success-route')]
+
+    #[Route('/success', name: 'success_route')]
     public function successRoute(Request $request): Response
     {
-        //print_r($request);
         // Retrieve the form data from route parameters
         $articleName = $request->query->get('articleName');
         $description = $request->query->get('description');
         $articleImages = $request->query->get('articleImages');
         $sizeAndQuantities = $request->query->get('sizeAndQuantities');
-        print_r($articleImages);
-        print_r($sizeAndQuantities);
-        print_r($articleName);
 
         return $this->render('success_page/index.html.twig', [
             'articleName' => $articleName,
@@ -197,31 +220,39 @@ class ArticleController extends AbstractController
         ]);
     }
 
-    public function showArticles(): Response
+    #[Route('/all-articles', name: 'get_all_articles')]
+    public function showArticles(): JsonResponse
     {
-        $entityManager = $this->getDoctrine()->getManager();
-        $articles = $entityManager->getRepository(Article::class)->findAll();
+        $articles = $this->entityManager->getRepository(Article::class)->findAll();
+        $data = [];
 
-        return $this->render('articles.html.twig', [
-            'articles' => $articles,
-        ]);
+        foreach ($articles as $article) {
+            $data[] = [
+                'articleId' => $article->getArticleId(),
+                'articleName' => $article->getArticleName(),
+                'articlePrice' => $article->getArticlePrice(),
+                'descriptions' => $article->getDescription(),
+                'articleImages' => $article->getArticleImages(),
+                'articleCategory' => $article->getArticleCategory(),
+                'categoryDescription' => $article->getCategoryDescription()
+            ];
+        }
+
+        return new JsonResponse($data);
     }
 
     // Controller action for deleting an article
     #[Route('article/delete/{id}', name: 'delete_article')]
-    public function deleteArticle($id): Response
+    public function deleteArticle($id): JsonResponse
     {
         //$articleId = $request->query->get('id');
-        echo "Article to deleted: " . $id;
-        $response = $this->articleManager->deleteArticle($id);
-        echo "Response: ";
-        var_dump($response);
-
-        // Return a response indicating success or failure
-        if ($response) {
-            return new Response('Article deleted successfully');
-        } else {
-            return new Response('Failed to delete article', 500); // 500 is the status code for internal server error
+        $article = $this->entityManager->getRepository(Article::class)->find($id);
+        //echo "Article to deleted: " . $id;
+        try {
+            $this->articleManager->deleteArticle($article);
+            return new JsonResponse(['message' => 'Article deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return new JsonResponse(['error' => 'Failed to delete article: ' . $e->getMessage()], 500);
         }
     }
 
@@ -230,7 +261,6 @@ class ArticleController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
         $this->logger->debug(json_encode($data));
-        //print_r($data);
         $articleId = $data['articleId'];
         $action = $data['action'];
 
@@ -273,8 +303,6 @@ class ArticleController extends AbstractController
         $articleId = $data['articleId'];
 
         $userEmail = $this->getUser()->getUserIdentifier();
-
-        //print_r($userEmail);
 
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
         $article = $this->entityManager->getRepository(Article::class)->find($articleId);

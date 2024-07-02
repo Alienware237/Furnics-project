@@ -80,7 +80,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->role = 'user';
         $this->createdAt = new \DateTime();
         $this->updatedAt = new \DateTime();
         $this->reviews = new ArrayCollection();

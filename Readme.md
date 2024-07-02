@@ -8,6 +8,8 @@
 
 ### Starting Docker Containers
 
+Adjust the port number if necessary based on the Docker configuration.
+
 To start the application using Docker:
 ```
 docker-compose up -d
@@ -43,6 +45,18 @@ apt-get install vim
 
 Ensure directory permissions and ownership are correctly set to allow image uploads by the admin.
 
+Create the Directory:
+```
+mkdir -p /var/www/html/public/uploads
+```
+
+Set the Correct Permissions:
+```
+chown -R www-data:www-data /var/www/html/public/uploads
+chmod -R 775 /var/www/html/public/uploads
+```
+
+
 ### Database Setup
 
 Create the database:
@@ -61,8 +75,14 @@ Insert sample articles into the database:
 ```
 php bin/console app:create-article
 ```
+Insert sample admin into the database:
+```
+php bin/console app:create-admin-user
+```
+
 ### Accessing the Application
 
+#### As User
 an error may occur. Ignore it and simply continue with the next step
 
 - Open your web browser and navigate to: http://localhost:8094/index.php/index
@@ -70,7 +90,22 @@ an error may occur. Ignore it and simply continue with the next step
 - If an error occurs, it will probably be due to the fact that a user cannot have an open session if they are not registered.
 So please start by registering by browsing: http://localhost:8094/index.php/user/register
 
-Adjust the port number if necessary based on your Docker configuration.
+
+#### As Administrator
+- Open your web browser and navigate to: http://localhost:8094/index.php/article-form
+
+You will be redirected to the login page:
+
+```
+Email: admin@example.com
+Password: adminpassword
+```
+
+To verify if the authentication and role-based access control are working correctly in the main environment, you should set the APP_ENV environment variable to main in the file .env as following :
+
+```
+APP_ENV=main
+```
 
 
 ## Running Tests

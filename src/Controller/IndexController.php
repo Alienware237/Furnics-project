@@ -3,7 +3,6 @@
 namespace okpt\furnics\project\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
-use okpt\furnics\project\Entity\Article;
 use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Form\LoginType;
 use okpt\furnics\project\Services\ArticleManager;
@@ -18,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class IndexController extends AbstractController
@@ -56,13 +54,6 @@ class IndexController extends AbstractController
         $user = $this->getUser();
         $form = $this->createForm(LoginType::class);
 
-        // Debugging to check the current user identifier
-        if ($user) {
-            //print_r($user->getUserIdentifier());
-        } else {
-            //echo "User Not found!";
-        }
-
         // Check if the user is not logged in
         if (!$user || str_contains($user->getUsername(), 'example')) {
             //echo "No real user found!";
@@ -73,17 +64,17 @@ class IndexController extends AbstractController
             if ($defaultUserId) {
                 $user = $this->entityManager->getRepository(User::class)->find($defaultUserId);
                 if ($user) {
-                    $this->authenticationService->signIn($user, false, new Response());
+                    $this->authenticationService->signIn($user, new Response(), false);
                 } else {
                     // Create a new default user if not found
                     $user = $this->createDefaultUser($passwordEncoder);
-                    $this->authenticationService->signIn($user, false, new Response());
+                    $this->authenticationService->signIn($user, new Response(), false);
                     $session->set('default_user_id', $user->getUserId());
                 }
             } else {
                 // Create a new default user if session doesn't exist
                 $user = $this->createDefaultUser($passwordEncoder);
-                $this->authenticationService->signIn($user, false, new Response());
+                $this->authenticationService->signIn($user, new Response(), false);
                 $session->set('default_user_id', $user->getUserId());
             }
         }
@@ -104,8 +95,13 @@ class IndexController extends AbstractController
                 $response = new Response();
 
                 //$this->logger->info('Try to sign in with username: ' . $user->getUsername());
-                $this->authenticationService->signIn($user, true, $response);
-                $session->set('_security_main', $user->getUserId());
+                $this->authenticationService->signIn($user, $response, true);
+                //$session->set('_security_main', $user->getUserId());
+
+                if (in_array('ROLE_ADMIN', $user->getRoles())) {
+                    // Redirect to Admin dashboard
+                    return $this->redirectToRoute('article_form');
+                }
 
                 //return $this->redirectToRoute('app_index');
             }
@@ -115,7 +111,6 @@ class IndexController extends AbstractController
             $cart = $cart[0];
         }
         $allCartItems = $this->cartManager->getAllCartArticle($cart);
-        //print_r($user);
         return $this->render('index/index.html.twig', [
             'controller_name' => 'IndexController',
             'articles' => $allArticles,
