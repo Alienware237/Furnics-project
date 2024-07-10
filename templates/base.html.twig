@@ -23,8 +23,11 @@
         ================================================== -->
         <script src="{{ asset('js/modernizr.js') }}"></script>
 
+        {% block stylesheets %}
+
+        {% endblock %}
+
         {% block javascripts %}
-            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
             <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
         {% endblock %}
@@ -77,6 +80,15 @@
                 <circle cx="12" cy="12" r="11" fill="none" stroke="currentColor" stroke-width="2" />
                 <line x1="12" y1="7" x2="12" y2="17" stroke="currentColor" stroke-width="2" />
                 <line x1="7" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="2" />
+            </symbol>
+            <!-- Next Symbol -->
+            <symbol xmlns="http://www.w3.org/2000/svg" id="next" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M8 5v14l11-7z"/>
+            </symbol>
+
+            <!-- Previous Symbol -->
+            <symbol xmlns="http://www.w3.org/2000/svg" id="previous" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M16 19V5l-11 7z"/>
             </symbol>
         </svg>
 

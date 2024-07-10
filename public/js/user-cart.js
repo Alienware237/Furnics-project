@@ -4,15 +4,24 @@ $(document).ready(function() {
     let removeUrl = container.data('remove-url');
 
     $('.js-btn-minus, .js-btn-plus').off('click').on('click', function() {
-        let action = $(this).hasClass('js-btn-minus') ? 'decrease' : 'increase';
+        const action = $(this).hasClass('js-btn-minus') ? 'decrease' : 'increase';
         const articleId = $(this).data('article-id');
+        const cartItemId = $(this).data('cart-item-id');
+
         const price = $(this).data('article-price');
+        const $count = $('.count');
+        const currentCount = parseInt($count.data('article-number'));
+
+        // Avoid if the user try to decrease the number to 0
+        if (currentCount < 1) {
+            return "number of article can not inferior to 1!";
+        }
         $.ajax({
             url: updateUrl,
             method: 'POST',
             contentType: 'application/json',
             dataType: 'json',
-            data: JSON.stringify({ articleId: articleId, action: action }),
+            data: JSON.stringify({ articleId: articleId, action: action, cartItemId : cartItemId }),
             success: function(data) {
                 if (data.success) {
                     // Update the quantity and price in the DOM
@@ -31,8 +40,6 @@ $(document).ready(function() {
                     //console.log(totalPrice);
 
                     // Update the cart item count
-                    var $count = $('.count');
-                    var currentCount = parseInt($count.data('article-number'));
                     var newCount = 0;
                     if (action === "increase") {
                         newCount = currentCount + 1;
@@ -86,7 +93,6 @@ $(document).ready(function() {
 
                     // Decrement the count by the quantity of the removed item
                     let $count = $('.count');
-                    console.log('$count: ', $count);
                     let currentCount = parseInt($count.data('article-number'));
                     let newCount = currentCount - quantityToRemove;
                     $count.data('article-number', newCount);

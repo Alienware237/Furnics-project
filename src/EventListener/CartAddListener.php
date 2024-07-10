@@ -33,6 +33,13 @@ final class CartAddListener
         $this->logger->info('Event listener triggered for article ' . $event->getArticleId());
         $articleId = $event->getArticleId();
         $userEmail = $event->getUserEmail();
+        $quantity = $event->getDetail()['quantity'];
+        $data = $event->getDetail();
+
+        unset($data["quantity"]);
+
+        $this->logger->info('Quantity of articles: ' . $quantity);
+        //$this->logger->info('size of article: ' . $size);
 
         // Logic to add the article to the user's cart
         $user = $this->entityManager->getRepository(User::class)->findBy(['email' => $userEmail]);
@@ -57,20 +64,26 @@ final class CartAddListener
             return;
         }
 
-        $item = $this->entityManager->getRepository(CartItem::class)->findOneBy(['article' => $article]);
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['article' => $article, 'detailsOfChoice' => json_encode($data)]);
         //Check if The article Exist in the Cart and just increment the quantity
-        if ($item) {
-            $item->setQuantity($item->getQuantity() + 1);
-            $this->entityManager->persist($cart);
-            $this->entityManager->flush();
-            return;
+        if (!$cartItem) {
+            $cartItem = new CartItem();
+            if ($quantity) {
+                $cartItem->setQuantity(intval($quantity));
+            } else {
+                $cartItem->setQuantity( 1);
+            }
+        } else {
+            if ($quantity) {
+                $cartItem->setQuantity($cartItem->getQuantity() + intval($quantity));
+            } else {
+                $cartItem->setQuantity($cartItem->getQuantity() + 1);
+            }
         }
 
         // Create a new CartItem and set its attributes
-        $cartItem = new CartItem();
         $cartItem->setArticle($article); // Set the Article entity
-        $cartItem->setQuantity(1); // Set the quantity
-        $cartItem->setDetailsOfChoice(''); // Set details of choice if needed
+        $cartItem->setDetailsOfChoice(json_encode($data)); // Set details of choice if needed
 
         // Add the CartItem to the Cart
         $cart->addCartItem($cartItem);
