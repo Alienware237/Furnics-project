@@ -1,0 +1,287 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello CartController!{% endblock %}
+{% block head %}
+    {% block stylesheets %}
+        <link rel="stylesheet" type="text/css" href="{{ asset('css/site-navbar.scss') }}">
+        <link rel="stylesheet" type="text/css" href="{{ asset('css/fontawesome.min.css') }}">
+        <link rel="stylesheet" type="text/css" href="{{ asset('css/article-detail.scss') }}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% block javascripts %}
+        <script src="{{ asset('js/jquery-3.3.1.min.js') }}"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.bundle.min.js">
+        <script src="{{ asset('js/user-cart.js') }}"></script>
+        <script src="{{ asset('js/article-detail.js') }}"></script>
+    {% endblock %}
+
+    {% include 'header/header2.html.twig' with {'user' : user, 'allCartItems' : allCartItems} %}
+
+
+    <!-- Open Content -->
+    <section class="bg-light">
+        <div class="container pb-5">
+            <div class="row">
+                {% set images = article.articleImages | json_decode %}
+                <div class="col-lg-5 mt-5">
+                    <div class="card mb-3">
+                        <img class="card-img img-fluid" src="{{ asset(images[0]) }}" alt="Card image cap" id="product-detail">
+                    </div>
+                    <div class="row">
+                        <!--Start Controls-->
+                        <div class="col-1 align-self-center">
+                            <a href="#multi-item-example" role="button" data-bs-slide="prev">
+                                <svg class="cart" width="18" height="18">
+                                    <use xlink:href="#previous"></use>
+                                </svg>
+                            </a>
+                        </div>
+                        <!--End Controls-->
+                        <!--Start Carousel Wrapper-->
+                        <div id="multi-item-example" class="col-10 carousel slide carousel-multi-item" data-bs-ride="carousel">
+                            <!--Start Slides-->
+                            <div class="carousel-inner product-links-wap" role="listbox">
+
+                                {% set count = (images|length / 3) | round(0, 'ceil') %}
+
+                                {% for i in 0..(count -1) %}
+                                    <div class="carousel-item {% if loop.first %}active{% endif %}">
+                                        <div class="row">
+                                            {% for image in images|slice(i*3, 3) %}
+                                                <div class="col-4">
+                                                    <a href="#">
+                                                        <img class="card-img img-fluid" src="{{ asset(image) }}" alt="Product Image {{ i*3 + loop.index }}">
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <!--End Slides-->
+
+                            <!--End Slides-->
+                        </div>
+                        <!--End Carousel Wrapper-->
+                        <!--Start Controls-->
+                        <div class="col-1 align-self-center">
+                            <a href="#multi-item-example" role="button" data-bs-slide="next">
+                                <svg class="cart" width="18" height="18">
+                                    <use xlink:href="#next"></use>
+                                </svg>
+                            </a>
+                        </div>
+                        <!--End Controls-->
+                    </div>
+                </div>
+                <!-- col end -->
+                <div class="col-lg-7 mt-5">
+                    <div class="card">
+                        {% set articleDetail = article.description | json_decode %}
+                        <div class="card-body">
+                            <h1 class="h2">{{ article.articleName }}</h1>
+                            <p class="h3 py-2">${{ article.articlePrice }}</p>
+                            <p class="py-2">
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star text-warning"></i>
+                                <i class="fa fa-star-half text-warning"></i>
+                                <span class="list-inline-item text-dark">Rating 4.8 | 36 Comments</span>
+                            </p>
+                            <ul class="list-inline">
+                                <li class="list-inline-item">
+                                    <h6>Brand:</h6>
+                                </li>
+                                <li class="list-inline-item">
+                                    <p class="text-muted"><strong>Kimpa</strong></p>
+                                </li>
+                            </ul>
+                            {% if articleDetail.description %}
+                                <h6>Description:</h6>
+                                <p>{{ articleDetail.description }}</p>
+                            {% endif %}
+                            <ul class="list-inline">
+                                <li class="list-inline-item">
+                                    <h6>Avaliable Color :</h6>
+                                </li>
+                                <li class="list-inline-item">
+                                    <p class="text-muted"><strong>White / Black</strong></p>
+                                </li>
+                            </ul>
+
+                            {% if articleDetail.categoryDescription %}
+                                <h6>Specification:</h6>
+                                <p>{{ articleDetail.categoryDescription }}</p>
+                            {% endif %}
+                            <!--
+                            <ul class="list-unstyled pb-3">
+                                <li>Lorem ipsum dolor sit</li>
+                                <li>Amet, consectetur</li>
+                                <li>Adipiscing elit,set</li>
+                                <li>Duis aute irure</li>
+                                <li>Ut enim ad minim</li>
+                                <li>Dolore magna aliqua</li>
+                                <li>Excepteur sint</li>
+                            </ul>
+                            -->
+
+                            {% if articleDetail.sizeAndQuantity %}
+                                <form id="product-form" action="" method="GET" data-add-url="{{ path('cart_add') }}" data-article-id="{{ article.getArticleId() }}" data-csrf-token="{{ csrf_token('add-to-cart') }}">
+                                    <input type="hidden" name="product-title" value="Activewear">
+                                    <div class="row">
+                                        <div class="col-auto">
+                                            <ul class="list-inline pb-3">
+                                                <li class="list-inline-item">Size :
+                                                    <input type="hidden" name="product-size" id="product-size" value="{{ articleDetail.sizeAndQuantity[0].size }}">
+                                                </li>
+                                                {% for key, pair in articleDetail.sizeAndQuantity %}
+                                                    <li class="list-inline-item"><span  id="size-{{ key }}" class="btn btn-success btn-size">{{ pair.size }}</span></li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                        <div class="col-auto">
+                                            <ul class="list-inline pb-3">
+                                                <li class="list-inline-item text-right">
+                                                    Quantity
+                                                    <input type="hidden" name="product-quantity" id="product-quantity" value="1">
+                                                </li>
+                                                <li class="list-inline-item"><span class="btn btn-success" id="btn-minus">-</span></li>
+                                                <li class="list-inline-item"><span class="badge bg-secondary" id="var-value">1</span></li>
+                                                <li class="list-inline-item"><span class="btn btn-success" id="btn-plus">+</span></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="row pb-3">
+                                        <div class="col d-grid">
+                                            <button type="submit" class="btn btn-success btn-lg" name="submit" value="buy" id="buy-button">Buy</button>
+                                        </div>
+                                        <div class="col d-grid">
+                                            <button type="submit" class="btn btn-success btn-lg" name="submit" value="addtocart" id="add-to-cart-button">Add To Cart</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            {% endif %}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Close Content -->
+
+
+    <!------------------ Review and rate -------------->
+    <div class="row px-xl-5">
+        <div class="col">
+            <div class="nav nav-tabs justify-content-center border-secondary mb-4">
+                <a class="nav-item nav-link active" data-toggle="tab" href="#tab-pane-1">Description</a>
+                <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-2">Information</a>
+                <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-3">Reviews (0)</a>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="tab-pane-1">
+                    <h4 class="mb-3">Product Description</h4>
+                    <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam. Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
+                    <p>Dolore magna est eirmod sanctus dolor, amet diam et eirmod et ipsum. Amet dolore tempor consetetur sed lorem dolor sit lorem tempor. Gubergren amet amet labore sadipscing clita clita diam clita. Sea amet et sed ipsum lorem elitr et, amet et labore voluptua sit rebum. Ea erat sed et diam takimata sed justo. Magna takimata justo et amet magna et.</p>
+                </div>
+                <div class="tab-pane fade" id="tab-pane-2">
+                    <h4 class="mb-3">Additional Information</h4>
+                    <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam. Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0">
+                                    Sit erat duo lorem duo ea consetetur, et eirmod takimata.
+                                </li>
+                                <li class="list-group-item px-0">
+                                    Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
+                                </li>
+                                <li class="list-group-item px-0">
+                                    Duo amet accusam eirmod nonumy stet et et stet eirmod.
+                                </li>
+                                <li class="list-group-item px-0">
+                                    Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item px-0">
+                                    Sit erat duo lorem duo ea consetetur, et eirmod takimata.
+                                </li>
+                                <li class="list-group-item px-0">
+                                    Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
+                                </li>
+                                <li class="list-group-item px-0">
+                                    Duo amet accusam eirmod nonumy stet et et stet eirmod.
+                                </li>
+                                <li class="list-group-item px-0">
+                                    Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="tab-pane-3">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h4 class="mb-4">1 review for "Colorful Stylish Shirt"</h4>
+                            <div class="media mb-4">
+                                <img src="img/user.jpg" alt="Image" class="img-fluid mr-3 mt-1" style="width: 45px;">
+                                <div class="media-body">
+                                    <h6>John Doe<small> - <i>01 Jan 2045</i></small></h6>
+                                    <div class="text-primary mb-2">
+                                        <i class="fa fa-star text-warning"></i>
+                                        <i class="fa fa-star text-warning"></i>
+                                        <i class="fa fa-star text-warning"></i>
+                                        <i class="fa fa-star text-warning"></i>
+                                        <i class="far fa-star"></i>
+                                    </div>
+                                    <p>Diam amet duo labore stet elitr ea clita ipsum, tempor labore accusam ipsum et no at. Kasd diam tempor rebum magna dolores sed sed eirmod ipsum.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h4 class="mb-4">Leave a review</h4>
+                            <small>Your email address will not be published. Required fields are marked *</small>
+                            <div class="d-flex my-3">
+                                <p class="mb-0 mr-2">Your Rating * :</p>
+                                <div class="text-primary rating mb-2"  data-rating="0">
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                    <i class="far fa-star"></i>
+                                </div>
+                            </div>
+                            <form>
+                                <div class="form-group">
+                                    <label for="message">Your Review *</label>
+                                    <textarea id="message" cols="30" rows="5" class="form-control"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="name">Your Name *</label>
+                                    <input type="text" class="form-control" id="name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Your Email *</label>
+                                    <input type="email" class="form-control" id="email">
+                                </div>
+                                <div class="form-group mb-0">
+                                    <input type="submit" value="Leave Your Review" class="btn btn-primary px-3">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% include 'footer/footer.html.twig' %}
+{% endblock %}

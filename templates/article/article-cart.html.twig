@@ -35,7 +35,7 @@
                                 <span>${{ article.getArticlePrice() }}</span>
                             </a>
                         </div>
-                        <a href="#" class="btn btn-normal mt-3">Learn More</a>
+                        <a href="{{ path('article_detail', {id: article.articleId}) }}" class="btn btn-normal mt-3">Learn More</a>
                     </div>
                 </div>
             </div>
