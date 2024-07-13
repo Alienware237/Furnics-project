@@ -4,6 +4,7 @@ namespace okpt\furnics\project\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use DateTimeInterface;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use DoctrineExtensions\Query\Mysql\Date;
@@ -162,6 +163,33 @@ class Article
     public function setCategoryDescription(string $categoryDescription): self
     {
         $this->categoryDescription = $categoryDescription;
+        return $this;
+    }
+
+    public function getComment(): Collection
+    {
+        return $this->comments;
+    }
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setArticle($this);
+        }
+        return $this;
+    }
+
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): self
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews[] = $review;
+            $review->setArticle($this);
+        }
         return $this;
     }
 }

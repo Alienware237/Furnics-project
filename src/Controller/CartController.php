@@ -92,6 +92,7 @@ class CartController extends AbstractController
         $quantity = $request->request->get('quantity');
         $user = $this->getUser();
         $submittedToken = $request->request->get('_csrf_token');
+        $action = $request->request->get('action');
         $detail = [
             'size' => $size,
         'quantity' => $quantity
@@ -108,6 +109,10 @@ class CartController extends AbstractController
         if ($articleId) {
             $event = new CartAddEvent((int) $articleId, $user->getUserIdentifier(), $detail);
             $this->eventDispatcher->dispatch($event, CartAddEvent::NAME);
+
+            if ($action == 'buy') {
+                return $this->json(['redirect' => $this->generateUrl('app_cart')], Response::HTTP_OK);
+            }
 
             return $this->json(['status' => 'Article added to cart'], Response::HTTP_OK);
         }
