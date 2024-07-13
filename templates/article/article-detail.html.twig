@@ -82,15 +82,26 @@
                     <div class="card">
                         {% set articleDetail = article.description | json_decode %}
                         <div class="card-body">
+                            {% set rating = allReviews | average_rating %}
                             <h1 class="h2">{{ article.articleName }}</h1>
                             <p class="h3 py-2">${{ article.articlePrice }}</p>
-                            <p class="py-2">
-                                <i class="fa fa-star text-warning"></i>
-                                <i class="fa fa-star text-warning"></i>
-                                <i class="fa fa-star text-warning"></i>
-                                <i class="fa fa-star text-warning"></i>
-                                <i class="fa fa-star-half text-warning"></i>
-                                <span class="list-inline-item text-dark">Rating 4.8 | 36 Comments</span>
+                            <p class=" text-primary py-2">
+                                {% for i in 1..( rating | interger_part) %}
+                                    <i class="fa fa-star text-warning"></i>
+                                {% endfor %}
+                                {% if (rating | is_float) %}
+                                    <i class="fa fa-star-half text-warning"></i>
+                                    {% if ( rating | interger_part) +1 < 5 %}
+                                        {% for i in (( rating | interger_part) +1)..4 %}
+                                            <i class="fa fa-star"></i>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% else %}
+                                    {% for i in rating..4 %}
+                                        <i class="fa fa-star"></i>
+                                    {% endfor %}
+                                {% endif %}
+                                <span class="list-inline-item text-dark">Rating {{ rating }} | {{ allReviews | length }} Comments</span>
                             </p>
                             <ul class="list-inline">
                                 <li class="list-inline-item">
@@ -177,22 +188,29 @@
 
     <!------------------ Review and rate -------------->
     <div class="row px-xl-5">
+        {% set articleDetail = article.description | json_decode %}
         <div class="col">
             <div class="nav nav-tabs justify-content-center border-secondary mb-4">
                 <a class="nav-item nav-link active" data-toggle="tab" href="#tab-pane-1">Description</a>
                 <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-2">Information</a>
-                <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-3">Reviews (0)</a>
+                <a class="nav-item nav-link" data-toggle="tab" href="#tab-pane-3">Reviews ({{ allReviews | length }})</a>
             </div>
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="tab-pane-1">
                     <h4 class="mb-3">Product Description</h4>
-                    <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam. Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
-                    <p>Dolore magna est eirmod sanctus dolor, amet diam et eirmod et ipsum. Amet dolore tempor consetetur sed lorem dolor sit lorem tempor. Gubergren amet amet labore sadipscing clita clita diam clita. Sea amet et sed ipsum lorem elitr et, amet et labore voluptua sit rebum. Ea erat sed et diam takimata sed justo. Magna takimata justo et amet magna et.</p>
+                    {{ articleDetail.categoryDescription }}
                 </div>
                 <div class="tab-pane fade" id="tab-pane-2">
                     <h4 class="mb-3">Additional Information</h4>
-                    <p>Eos no lorem eirmod diam diam, eos elitr et gubergren diam sea. Consetetur vero aliquyam invidunt duo dolores et duo sit. Vero diam ea vero et dolore rebum, dolor rebum eirmod consetetur invidunt sed sed et, lorem duo et eos elitr, sadipscing kasd ipsum rebum diam. Dolore diam stet rebum sed tempor kasd eirmod. Takimata kasd ipsum accusam sadipscing, eos dolores sit no ut diam consetetur duo justo est, sit sanctus diam tempor aliquyam eirmod nonumy rebum dolor accusam, ipsum kasd eos consetetur at sit rebum, diam kasd invidunt tempor lorem, ipsum lorem elitr sanctus eirmod takimata dolor ea invidunt.</p>
                     <div class="row">
+                        <ul class="list-inline pb-3">
+                            {% for sizeElem in articleDetail.sizeAndQuantity %}
+                                <div class="col-md-6">
+                                    <li class="list-inline-item">Size: <span class="btn btn-success btn-size" style="cursor: none">{{ sizeElem.size }}</span>   Quantity in stock: <span class="badge bg-secondary" id="var-value">{{ sizeElem.quantity }}</span></li>
+                                </div>
+                            {% endfor %}
+                        </ul>
+                        <!--
                         <div class="col-md-6">
                             <ul class="list-group list-group-flush">
                                 <li class="list-group-item px-0">
@@ -209,49 +227,38 @@
                                 </li>
                             </ul>
                         </div>
-                        <div class="col-md-6">
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item px-0">
-                                    Sit erat duo lorem duo ea consetetur, et eirmod takimata.
-                                </li>
-                                <li class="list-group-item px-0">
-                                    Amet kasd gubergren sit sanctus et lorem eos sadipscing at.
-                                </li>
-                                <li class="list-group-item px-0">
-                                    Duo amet accusam eirmod nonumy stet et et stet eirmod.
-                                </li>
-                                <li class="list-group-item px-0">
-                                    Takimata ea clita labore amet ipsum erat justo voluptua. Nonumy.
-                                </li>
-                            </ul>
-                        </div>
+                        -->
                     </div>
                 </div>
                 <div class="tab-pane fade" id="tab-pane-3">
                     <div class="row">
                         <div class="col-md-6">
                             <h4 class="mb-4">1 review for "Colorful Stylish Shirt"</h4>
-                            <div class="media mb-4">
-                                <img src="img/user.jpg" alt="Image" class="img-fluid mr-3 mt-1" style="width: 45px;">
-                                <div class="media-body">
-                                    <h6>John Doe<small> - <i>01 Jan 2045</i></small></h6>
-                                    <div class="text-primary mb-2">
-                                        <i class="fa fa-star text-warning"></i>
-                                        <i class="fa fa-star text-warning"></i>
-                                        <i class="fa fa-star text-warning"></i>
-                                        <i class="fa fa-star text-warning"></i>
-                                        <i class="far fa-star"></i>
+                            {% for review in allReviews %}
+                                {% set userPseudo = (review.userdata | json_decode).name %}
+                                <div class="media mb-4">
+                                    <img src="img/user.jpg" alt="Image" class="img-fluid mr-3 mt-1" style="width: 45px;">
+                                    <div class="media-body">
+                                        <h6>{{ userPseudo }}<small> - <i>{{ review.updatedAt | date("m/d/Y") }}</i></small></h6>
+                                        <div class="text-primary mb-2">
+                                            {% for i in 1..review.rating %}
+                                                <i class="fa fa-star text-warning"></i>
+                                            {% endfor %}
+                                            {% for i in (review.rating + 1)..5 %}
+                                                <i class="fa fa-star"></i>
+                                            {% endfor %}
+                                        </div>
+                                        <p>{{ review.reviewText }}</p>
                                     </div>
-                                    <p>Diam amet duo labore stet elitr ea clita ipsum, tempor labore accusam ipsum et no at. Kasd diam tempor rebum magna dolores sed sed eirmod ipsum.</p>
                                 </div>
-                            </div>
+                            {% endfor %}
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-6" data-article-id="{{ article.getArticleId() }}" data-user-id="{{ user.userId }}" data-review-url="{{ path('article_review') }}">
                             <h4 class="mb-4">Leave a review</h4>
                             <small>Your email address will not be published. Required fields are marked *</small>
                             <div class="d-flex my-3">
                                 <p class="mb-0 mr-2">Your Rating * :</p>
-                                <div class="text-primary rating mb-2"  data-rating="0">
+                                <div class="text-primary rating mb-2" data-rating="0">
                                     <i class="far fa-star"></i>
                                     <i class="far fa-star"></i>
                                     <i class="far fa-star"></i>
@@ -259,18 +266,18 @@
                                     <i class="far fa-star"></i>
                                 </div>
                             </div>
-                            <form>
+                            <form id="review-form">
                                 <div class="form-group">
                                     <label for="message">Your Review *</label>
-                                    <textarea id="message" cols="30" rows="5" class="form-control"></textarea>
+                                    <textarea id="message" cols="30" rows="5" class="form-control" required></textarea>
                                 </div>
                                 <div class="form-group">
                                     <label for="name">Your Name *</label>
-                                    <input type="text" class="form-control" id="name">
+                                    <input type="text" class="form-control" id="name" required>
                                 </div>
                                 <div class="form-group">
                                     <label for="email">Your Email *</label>
-                                    <input type="email" class="form-control" id="email">
+                                    <input type="email" class="form-control" id="email" required>
                                 </div>
                                 <div class="form-group mb-0">
                                     <input type="submit" value="Leave Your Review" class="btn btn-primary px-3">

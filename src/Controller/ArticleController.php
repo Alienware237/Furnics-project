@@ -7,6 +7,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\Article;
 use okpt\furnics\project\Entity\Cart;
 use okpt\furnics\project\Entity\CartItem;
+use okpt\furnics\project\Entity\Comment;
+use okpt\furnics\project\Entity\Review;
 use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Form\ArticleType;
 use okpt\furnics\project\Services\ArticleManager;
@@ -338,11 +340,14 @@ class ArticleController extends AbstractController
         }
         $allCartItems = $this->cartManager->getAllCartArticle($cart);
 
+        $allReviews = $this->entityManager->getRepository(Review::class)->findBy(['article' => $article]);
+
         return $this->render('article/article-detail.html.twig', [
             'controller_name' => 'CartController',
             'user' => $user,
             'allCartItems' => $allCartItems,
-            'article' => $article
+            'article' => $article,
+            'allReviews' => $allReviews,
 
         ]);
     }
@@ -357,6 +362,55 @@ class ArticleController extends AbstractController
             }
         }
         $this->setArticles($articles); // Assuming you have a method to set articles
+    }
+
+
+    private function addComment(string $comment, int $articleId)
+    {
+
+        $newComment = new Comment();
+        $newComment->setCommentText($comment);
+
+        $currentUser = $this->getUser();
+        $currentUser->addComment($newComment);
+
+        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
+        $article->addComment($newComment);
+
+        $this->entityManager->persist($currentUser);
+        $this->entityManager->persist($article);
+        $this->entityManager->persist($newComment);
+        $this->entityManager->flush();
+    }
+
+    #[Route('/review/new', name: 'article_review', methods: ['POST'])]
+    function addReview(Request $request)
+    {
+        $articleId = $request->request->get('article_id');
+        $userPseudo = $request->request->get('name');
+        $comment = $request->request->get('message');
+        $rate = $request->request->get('rating');
+
+        $userData['name'] = $userPseudo;
+        $newReview = new Review();
+        $newReview->setReviewText($comment);
+        $newReview->setRating($rate);
+
+        $newReview->setUserData(json_encode($userData));
+
+
+        $currentUser = $this->getUser();
+        $currentUser->addReview($newReview);
+
+        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
+        $article->addReview($newReview);
+
+        $this->entityManager->persist($currentUser);
+        $this->entityManager->persist($article);
+        $this->entityManager->persist($newReview);
+        $this->entityManager->flush();
+
+        return $this->json(['status' => 'Thank you for your review!'], Response::HTTP_OK);
     }
 
 }
