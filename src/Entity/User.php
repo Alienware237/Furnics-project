@@ -264,6 +264,34 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->password = null;
     }
 
+    public function getComments(): Collection
+    {
+        return $this->comments;
+    }
+
+    public function addComment(Comment $comment): self
+    {
+        if (!$this->comments->contains($comment)) {
+            $this->comments[] = $comment;
+            $comment->setUser($this);
+        }
+        return $this;
+    }
+
+    public function getReviews(): Collection
+    {
+        return $this->reviews;
+    }
+
+    public function addReview(Review $review): self
+    {
+        if (!$this->reviews->contains($review)) {
+            $this->reviews[] = $review;
+            $review->setUser($this);
+        }
+        return $this;
+    }
+
     public function getCreatedAt(): \DateTimeInterface
     {
         return $this->createdAt;

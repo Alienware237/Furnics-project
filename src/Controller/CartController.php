@@ -88,9 +88,17 @@ class CartController extends AbstractController
     public function addToCart(Request $request)
     {
         $articleId = $request->request->get('article_id');
+        $size = $request->request->get('size');
+        $quantity = $request->request->get('quantity');
         $user = $this->getUser();
         $submittedToken = $request->request->get('_csrf_token');
+        $action = $request->request->get('action');
+        $detail = [
+            'size' => $size,
+        'quantity' => $quantity
+        ];
 
+        $this->logger->info('Id of article of article: ' . $articleId);
         $this->logger->info('UserIdentifier for AddEvent: ' . $user->getUserIdentifier() . '\n' . 'ArticleId: ' . $articleId);
 
         // Validate CSRF token
@@ -99,8 +107,12 @@ class CartController extends AbstractController
         }
 
         if ($articleId) {
-            $event = new CartAddEvent((int) $articleId, $user->getUserIdentifier());
+            $event = new CartAddEvent((int) $articleId, $user->getUserIdentifier(), $detail);
             $this->eventDispatcher->dispatch($event, CartAddEvent::NAME);
+
+            if ($action == 'buy') {
+                return $this->json(['redirect' => $this->generateUrl('app_cart')], Response::HTTP_OK);
+            }
 
             return $this->json(['status' => 'Article added to cart'], Response::HTTP_OK);
         }

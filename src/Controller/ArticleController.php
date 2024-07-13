@@ -7,9 +7,12 @@ use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\Article;
 use okpt\furnics\project\Entity\Cart;
 use okpt\furnics\project\Entity\CartItem;
+use okpt\furnics\project\Entity\Comment;
+use okpt\furnics\project\Entity\Review;
 use okpt\furnics\project\Entity\User;
 use okpt\furnics\project\Form\ArticleType;
 use okpt\furnics\project\Services\ArticleManager;
+use okpt\furnics\project\Services\CartManager;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -30,12 +33,14 @@ class ArticleController extends AbstractController
     private LoggerInterface $logger;
     private $articleManager;
     private $entityManager;
+    private $cartManager;
 
-    public function __construct(LoggerInterface $logger, ArticleManager $articleManager, EntityManagerInterface $entityManager)
+    public function __construct(LoggerInterface $logger, ArticleManager $articleManager, EntityManagerInterface $entityManager, CartManager $cartManager)
     {
         $this->logger = $logger;
         $this->articleManager = $articleManager;
         $this->entityManager = $entityManager;
+        $this->cartManager = $cartManager;
     }
 
     /**
@@ -263,20 +268,11 @@ class ArticleController extends AbstractController
         $this->logger->debug(json_encode($data));
         $articleId = $data['articleId'];
         $action = $data['action'];
+        $cartItemId = $data['cartItemId'];
 
         //$this->logger->debug('$data[articleId]: ' . $articleId);
 
-        $userEmail = $this->getUser()->getEmail();
-
-        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userEmail]);
-        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
-
-        $cart = $this->entityManager->getRepository(Cart::class)->findOneBy(['user' => $user]);
-
-        if (is_array($cart)) {
-            $cart = $cart[0];
-        }
-        $cartItem = $this->entityManager->getRepository(CartItem::class)->findOneBy(['cart' => $cart, 'article' => $article]);
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->find($cartItemId);
 
         if ($cartItem) {
             if ($action === 'increase') {
@@ -326,6 +322,36 @@ class ArticleController extends AbstractController
         return new JsonResponse(['success' => false]);
     }
 
+    #[Route('/article-detail/{id}', name: 'article_detail')]
+    function articleDetail($id)
+    {
+        $user = $this->getUser();
+
+        //print_r($user);
+        if(!$user) {
+            $this->redirectToRoute('app_index');
+        }
+
+        $article = $this->entityManager->getRepository(Article::class)->find($id);
+
+        $cart = $this->cartManager->getCart($user);
+        if (is_array($cart)) {
+            $cart = $cart[0];
+        }
+        $allCartItems = $this->cartManager->getAllCartArticle($cart);
+
+        $allReviews = $this->entityManager->getRepository(Review::class)->findBy(['article' => $article]);
+
+        return $this->render('article/article-detail.html.twig', [
+            'controller_name' => 'CartController',
+            'user' => $user,
+            'allCartItems' => $allCartItems,
+            'article' => $article,
+            'allReviews' => $allReviews,
+
+        ]);
+    }
+
     private function removeArticleFromArray(Article $deletedArticle): void
     {
         $articles = $this->getArticles(); // Assuming you have a method to fetch articles
@@ -336,6 +362,55 @@ class ArticleController extends AbstractController
             }
         }
         $this->setArticles($articles); // Assuming you have a method to set articles
+    }
+
+
+    private function addComment(string $comment, int $articleId)
+    {
+
+        $newComment = new Comment();
+        $newComment->setCommentText($comment);
+
+        $currentUser = $this->getUser();
+        $currentUser->addComment($newComment);
+
+        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
+        $article->addComment($newComment);
+
+        $this->entityManager->persist($currentUser);
+        $this->entityManager->persist($article);
+        $this->entityManager->persist($newComment);
+        $this->entityManager->flush();
+    }
+
+    #[Route('/review/new', name: 'article_review', methods: ['POST'])]
+    function addReview(Request $request)
+    {
+        $articleId = $request->request->get('article_id');
+        $userPseudo = $request->request->get('name');
+        $comment = $request->request->get('message');
+        $rate = $request->request->get('rating');
+
+        $userData['name'] = $userPseudo;
+        $newReview = new Review();
+        $newReview->setReviewText($comment);
+        $newReview->setRating($rate);
+
+        $newReview->setUserData(json_encode($userData));
+
+
+        $currentUser = $this->getUser();
+        $currentUser->addReview($newReview);
+
+        $article = $this->entityManager->getRepository(Article::class)->find($articleId);
+        $article->addReview($newReview);
+
+        $this->entityManager->persist($currentUser);
+        $this->entityManager->persist($article);
+        $this->entityManager->persist($newReview);
+        $this->entityManager->flush();
+
+        return $this->json(['status' => 'Thank you for your review!'], Response::HTTP_OK);
     }
 
 }
