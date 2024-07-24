@@ -86,9 +86,11 @@
                             <h1 class="h2">{{ article.articleName }}</h1>
                             <p class="h3 py-2">${{ article.articlePrice }}</p>
                             <p class=" text-primary py-2">
-                                {% for i in 1..( rating | interger_part) %}
-                                    <i class="fa fa-star text-warning"></i>
-                                {% endfor %}
+                                {% if rating >=1 %}
+                                    {% for i in 1..( rating | interger_part) %}
+                                        <i class="fa fa-star text-warning"></i>
+                                    {% endfor %}
+                                {% endif %}
                                 {% if (rating | is_float) %}
                                     <i class="fa fa-star-half text-warning"></i>
                                     {% if ( rating | interger_part) +1 < 5 %}

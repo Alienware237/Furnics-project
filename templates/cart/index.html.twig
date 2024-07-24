@@ -13,7 +13,7 @@
     <script src="{{ asset('js/user-cart.js') }}"></script>
 {% endblock %}
 
-    <div class="site-wrap shopping-cart-page"  data-update-url="{{ path('update_article_quantity') }}" data-remove-url="{{ path('remove_article') }}">
+    <div class="site-wrap shopping-cart-page"  data-update-url="{{ path('update_article_quantity') }}" data-remove-url="{{ path('remove_article') }}" data-update-size="{{ path('update_article_size') }}">
         {% include 'header/header2.html.twig' with {'user' : user, 'allCartItems' : allCartItems} %}
 
         <div class="bg-light py-3">
@@ -42,7 +42,9 @@
                                 </thead>
                                 <tbody>
                                 {% for articleItem in  allCartItems %}
-                                    <tr data-article-id="{{ articleItem.article.articleId }}">
+                                    {% set articleDetail = articleItem.article.description | json_decode %}
+                                    {% set sizeChoice = articleItem.detail | json_decode %}
+                                    <tr data-article-id="{{ articleItem.article.articleId }}" data-size-choice="{{ articleItem.cartItemId }}-{{ sizeChoice.size }}">
                                         <td class="product-thumbnail">
                                             <img src="{{ asset(articleItem.article.articleImages | json_decode | first) }}" alt="Image" class="img-fluid">
                                         </td>
@@ -60,6 +62,24 @@
                                                     <button class="btn btn-outline-primary js-btn-plus" data-article-id="{{ articleItem.article.articleId }}" data-article-price="{{ articleItem.article.articlePrice }}" data-cart-item-id="{{ articleItem.cartItemId }}" type="button">&plus;</button>
                                                 </div>
                                             </div>
+
+                                            {% if articleDetail.sizeAndQuantity %}
+                                                <li class="list-inline-item">Size :
+                                                    <input type="hidden" name="product-size" id="product-size" value="{{ sizeChoice.size }}">
+                                                </li>
+                                                {% for key, pair in articleDetail.sizeAndQuantity %}
+                                                    <li class="list-inline-item">
+                                                        <span  id="size-{{ articleItem.cartItemId }}-{{ pair.size }}"
+                                                               id="size-{{ articleItem.cartItemId }}"
+                                                               class="btn btn-success btn-size size-{{ articleItem.cartItemId }}"
+                                                               data-cart-item-id="{{ articleItem.cartItemId }}"
+                                                               data-size="{{ pair.size }}"
+                                                        >
+                                                            {{ pair.size }}
+                                                        </span>
+                                                    </li>
+                                                {% endfor %}
+                                            {% endif %}
 
                                         </td>
                                         <td class="product-total-price">${{ articleItem.article.articlePrice * articleItem.quantity }}</td>

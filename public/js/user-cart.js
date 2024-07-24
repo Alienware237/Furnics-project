@@ -1,7 +1,19 @@
 $(document).ready(function() {
-    const container = $('div[data-update-url][data-remove-url]');
+    const container = $('div[data-update-url][data-remove-url][data-update-size]');
     const updateUrl = container.data('update-url');
     let removeUrl = container.data('remove-url');
+    const updateSize = container.data('update-size');
+
+    // Collect all data-size-choice values
+    let sizeChoices = [];
+    $('tr[data-size-choice]').each(function() {
+        sizeChoices.push($(this).data('size-choice'));
+    });
+
+    sizeChoices.forEach(el =>{
+        $(`#size-${el}`).removeClass('btn-success');
+        $(`#size-${el}`).addClass('btn-secondary');
+    })
 
     $('.js-btn-minus, .js-btn-plus').off('click').on('click', function() {
         const action = $(this).hasClass('js-btn-minus') ? 'decrease' : 'increase';
@@ -37,7 +49,6 @@ $(document).ready(function() {
                     }
                     document.getElementById('subTotalPriceElmText').innerHTML = totalPrice;
                     document.getElementById('totalPriceElmText').innerHTML = totalPrice;
-                    //console.log(totalPrice);
 
                     // Update the cart item count
                     var newCount = 0;
@@ -59,8 +70,6 @@ $(document).ready(function() {
         let quantityInput = $(`input[data-article-id="${articleId}"]`);
         let quantityToRemove = parseInt(quantityInput.val());
 
-        //console.log(articleId);
-
         if (removeUrl === undefined) {
             const container = $('div[data-remove-url]');
             removeUrl = container.data('remove-url');
@@ -78,7 +87,6 @@ $(document).ready(function() {
                     // Remove the product row from the table
                     let row = $(`tr:has(input[data-article-id="${articleId}"])`);
 
-                    //console.log(row);
                     row.remove();
 
                     // Update the total price
@@ -89,7 +97,6 @@ $(document).ready(function() {
                     }
                     document.getElementById('subTotalPriceElmText').innerHTML = totalPrice;
                     document.getElementById('totalPriceElmText').innerHTML = totalPrice;
-                    console.log(totalPrice);
 
                     // Decrement the count by the quantity of the removed item
                     let $count = $('.count');
@@ -98,6 +105,51 @@ $(document).ready(function() {
                     $count.data('article-number', newCount);
                     $count.text(newCount);
                 }
+            }
+        });
+    });
+
+    // Event listener for size buttons
+    $('.btn-size').off('click').on('click', function() {
+        const size = $(this).data('size');
+        const cartItemId = $(this).data('cart-item-id');
+
+        $.ajax({
+            url: updateSize, // Your route URL
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                size: size,
+                cartItemId: cartItemId
+            }),
+            success: function(response) {
+                if (response.success) {
+                    console.log('Size updated successfully!');
+
+                    // Handle size change
+
+                    let notSizeChoices = [];
+                    $(`.size-${cartItemId}`).each(function() {
+                        notSizeChoices.push($(this)); // Or use $(this).data('size') if size is a data attribute
+                    });
+
+                    const this_val = $(this).html();
+                    $("#product-size").val(this_val);
+                   notSizeChoices.forEach(el =>{
+                       el.removeClass('btn-secondary');
+                       el.addClass('btn-success');
+                   })
+
+                    $(`#size-${cartItemId}-${size}`).removeClass('btn-success');
+                    $(`#size-${cartItemId}-${size}`).addClass('btn-secondary');
+
+                    // Optionally update the UI or alert the user
+                } else {
+                    console.error('Failed to update size');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX request failed:', error);
             }
         });
     });
