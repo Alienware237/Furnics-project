@@ -100,7 +100,7 @@ class IndexController extends AbstractController
 
                 if (in_array('ROLE_ADMIN', $user->getRoles())) {
                     // Redirect to Admin dashboard
-                    return $this->redirectToRoute('article_form');
+                    return $this->redirectToRoute('admin');
                 }
 
                 //return $this->redirectToRoute('app_index');

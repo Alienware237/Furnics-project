@@ -19,7 +19,7 @@ class OrdersManager
         $this->logger = $logger;
     }
 
-    public function createOrder(User $user): void
+    public function createOrder(User $user): Orders
     {
         $order = new Orders();
         $order->setHouseNumber($user->getHouseNumber());
@@ -29,10 +29,8 @@ class OrdersManager
         $order->setPhone($user->getPhone());
         $order->setEmail($user->getEmail());
         $order->setName($user->getFirstName() . ' ' . $user->getLastName());
-        $order->setUser($user);
 
-        $this->ordersManager->persist($order);
-        $this->ordersManager->flush();
+        return $order;
     }
 
     public function getOrder(User $user): array

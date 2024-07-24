@@ -52,22 +52,22 @@ class createArticleTestCommand extends Command
         $articleDetail1 = [
             'description' => 'Article Description 2 for Test',
             'sizeAndQuantity' => [
-                'M' => 2,
-                'X' => 5
+                'M' => 5,
+                'X' => 8
             ]
         ];
 
         $articleDetail2 = [
             'description' => 'Article Description 2 for Test',
             'sizeAndQuantity' => [
-                'M' => 2,
-                'X' => 5
+                'M' => 3,
+                'X' => 8
             ]
         ];
         $articleDetail3 = [
             'sizeAndQuantity' => [
-                'M' => 2,
-                'X' => 5
+                'M' => 8,
+                'X' => 6
             ]
         ];
 
