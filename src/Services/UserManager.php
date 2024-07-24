@@ -47,10 +47,13 @@ class UserManager
     public function createUser(User $user): User
     {
         $user->setRole('ROLE_USER');
+        $orders = $this->ordersManager->createOrder($user);
+        $user->addOrder($orders);
         $this->entityManager->persist($user);
+        $this->entityManager->persist($orders);
+        $this->entityManager->flush();
 
         $this->cartManager->createCart($user);
-        $this->ordersManager->createOrder($user);
         $this->entityManager->flush();
         return $user;
     }
