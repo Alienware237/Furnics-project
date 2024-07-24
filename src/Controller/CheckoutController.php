@@ -11,6 +11,7 @@ use okpt\furnics\project\Form\DeliveryAddressType;
 use okpt\furnics\project\Form\SummaryType;
 use okpt\furnics\project\Services\AddressChecker;
 use okpt\furnics\project\Services\CartManager;
+use okpt\furnics\project\Services\MailService;
 use okpt\furnics\project\Services\UserManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,8 +32,16 @@ class CheckoutController extends AbstractController
     private $logger;
     private $dispatcher;
     private $addressChecker;
+    private $mailService;
 
-    public function __construct(UserManager $userManager, CartManager $cartManager, EntityManagerInterface $entityManager, WorkflowInterface $ordersProcessStateMachine, LoggerInterface $logger, EventDispatcherInterface $dispatcher, AddressChecker $addressChecker)
+    public function __construct(UserManager $userManager,
+                                CartManager $cartManager,
+                                EntityManagerInterface $entityManager,
+                                WorkflowInterface $ordersProcessStateMachine,
+                                LoggerInterface $logger,
+                                EventDispatcherInterface $dispatcher,
+                                AddressChecker $addressChecker,
+                                MailService $mailService)
     {
         $this->userManager = $userManager;
         $this->cartManager = $cartManager;
@@ -41,6 +50,7 @@ class CheckoutController extends AbstractController
         $this->logger = $logger;
         $this->dispatcher = $dispatcher;
         $this->addressChecker = $addressChecker;
+        $this->mailService = $mailService;
     }
     #[Route('/checkout-old', name: 'app_checkout')]
     public function index(): Response
@@ -66,8 +76,25 @@ class CheckoutController extends AbstractController
     public function index_checkout(Request $request)
     {
         $user = $this->getUser();
+
+        if(!$user) {
+            return $this->redirectToRoute('app_index');
+        }
         $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
         $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+
+        if (!$order) {
+            throw $this->createNotFoundException('Order not found.');
+        }
+
+        $form = $this->createForm(SummaryType::class, $order);
+        $form->handleRequest($request);
+
+        $cart = $this->cartManager->getCart($user);
+        if (is_array($cart)) {
+            $cart = $cart[0];
+        }
+        $allCartItems = $this->cartManager->getAllCartArticle($cart);
 
         switch ($order->getCurrentPlace()) {
             case 'shopping_cart':
@@ -78,6 +105,17 @@ class CheckoutController extends AbstractController
             case 'summary_for_purchase':
                 return $this->handleSummary($request, $order);
             case 'ordered':
+                // Call the mail service to send an email
+                $this->mailService->sendEmail(
+                    $user->getEmail(),
+                    'Order Confirmation',
+                    [
+                        'form' => $form->createView(),
+                        'user' => $user,
+                        'allCartItems' => $allCartItems,
+                        'order' => $order
+                    ]
+                );
                 return $this->redirectToRoute('app_thankyou');
         }
 
@@ -114,6 +152,22 @@ class CheckoutController extends AbstractController
             }
             if ($form->isValid()) {
                 $order->setOrderDate(new \DateTime());
+                $email = $form->get('email')->getData();
+                $firstName = $form->get('name')->getData();
+                $phone = $form->get('phone')->getData();
+                $country = $form->get('country')->getData();
+                $city = $form->get('city')->getData();
+                $street = $form->get('street')->getData();
+                $houseNumber = $form->get('houseNumber')->getData();
+
+                $user->setEmail($email);
+                $user->setFirstName($firstName);
+                $user->setPhone($phone);
+                $user->setCountry($country);
+                $user->setCity($city);
+                $user->setStreet($street);
+                $user->setHouseNumber($houseNumber);
+                $this->entityManager->persist($user);
                 $order->setNextTransition('proceed_to_summary');
                 $this->dispatcher->dispatch(new OrderEvent($order), OrderEvent::NAME);
                 $this->entityManager->flush();
@@ -205,12 +259,33 @@ class CheckoutController extends AbstractController
         ]);
     }
 
-    private function getOrder(): Orders
+    #[Route('/order', name: 'get_order', methods: ['GET'])]
+    public function getOrder(): Response
     {
         // Retrieve or create an Orders entity
         $user = $this->getUser();
 
         $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
-        return $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]);
+        $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+
+        if (!$order) {
+            throw $this->createNotFoundException('Order not found.');
+        }
+
+        $form = $this->createForm(SummaryType::class, $order);
+
+
+        $cart = $this->cartManager->getCart($user);
+        if (is_array($cart)) {
+            $cart = $cart[0];
+        }
+        $allCartItems = $this->cartManager->getAllCartArticle($cart);
+
+        return $this->render('mail/order-detail.html.twig', [
+            'form' => $form->createView(),
+            'user' => $user,
+            'allCartItems' => $allCartItems,
+            'order' => $order,
+        ]);
     }
 }

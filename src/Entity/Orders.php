@@ -17,7 +17,7 @@ class Orders
     #[ORM\Column(type: 'integer', unique: true, nullable: false)]
     private ?int $orderId = null;
 
-    #[ORM\OneToOne(inversedBy: 'orders', targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'orders')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: "user_id", nullable: false)]
     private User $user;
 

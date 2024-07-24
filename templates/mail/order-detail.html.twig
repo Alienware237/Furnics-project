@@ -1,0 +1,102 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello CheckoutController!{% endblock %}
+{% block head %}
+    {% block stylesheets %}
+    {% endblock %}
+{% endblock %}
+
+{% block body %}
+    <p> Hallo {{ user.firstName }},</p>
+    <p> Below are the details of your order.<br>
+        thank you for visiting us and see you soon,</p>
+    <p>Best regards<br>Kimpa</p>
+
+
+    <div class="site-blocks-table">
+        <table class="table table-bordered">
+            <thead>
+            <tr>
+                <th class="product-thumbnail">Image</th>
+                <th class="product-name">Product</th>
+                <th class="product-price">Price</th>
+                <th class="product-quantity">Quantity</th>
+                <th class="product-total">Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for articleItem in  allCartItems %}
+                <tr data-article-id="{{ articleItem.article.articleId }}">
+                    <td class="product-thumbnail">
+                        <img src="{{ asset(articleItem.article.articleImages | json_decode | first) }}" alt="Image" class="img-fluid">
+                    </td>
+                    <td class="product-name">
+                        <h2 class="h5 text-black">{{ articleItem.article.articleName }}</h2>
+                    </td>
+                    <td>${{ articleItem.article.articlePrice }}</td>
+                    <td>
+                        <div class="input-group mb-3" style="max-width: 120px;">
+                            <input type="text" class="form-control text-center product-quantity" data-article-id="{{ articleItem.article.articleId }}" value="{{ articleItem.quantity }}" placeholder="" aria-label="Example text with button addon" aria-describedby="button-addon1">
+                        </div>
+
+                    </td>
+                    <td class="product-total-price">${{ articleItem.article.articlePrice * articleItem.quantity }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-6 mb-5 mb-md-0">
+            <h2 class="h3 mb-3 text-black">Billing Details</h2>
+            <div class="p-3 p-lg-5 border">
+
+                <div class="contain">
+                    {{ form_start(form, { 'attr': {'id': 'checkout-form'} }) }}
+                    {% for field in form %}
+                        <div class="form-group">
+                            {{ form_label(field) }}
+                            {{ form_widget(field) }}
+                        </div>
+                    {% endfor %}
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+
+            <div class="row mb-5">
+                <div class="col-md-12">
+                    <h2 class="h3 mb-3 text-black">Your Order</h2>
+                    <div class="p-3 p-lg-5 border">
+                        <table class="table site-block-order-table mb-5">
+                            <thead>
+                            <th>Product</th>
+                            <th>Total</th>
+                            </thead>
+                            <tbody>
+                            {% for articleItem in  allCartItems %}
+                                <tr data-article-id="{{ articleItem.article.articleId }}">
+                                    <td>{{ articleItem.article.articleName }} <strong class="mx-2"> </strong>{{ articleItem.quantity }}</td>
+                                    <td class="product-total-price">${{ articleItem.article.articlePrice * articleItem.quantity }}</td>
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td class="text-black font-weight-bold"><strong>Cart Subtotal</strong></td>
+                                <td id="subTotalPriceElmText" class="text-black">${{ allCartItems | total_price}}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-black font-weight-bold"><strong>Order Total</strong></td>
+                                <td class="text-black font-weight-bold"><strong id="totalPriceElmText" class="text-black">${{ allCartItems | total_price}}</strong></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+{% endblock %}

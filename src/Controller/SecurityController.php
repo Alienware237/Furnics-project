@@ -57,7 +57,7 @@ class SecurityController extends AbstractController
 
                 // Check user roles and redirect accordingly
                 if (in_array('ROLE_ADMIN', $user->getRoles())) {
-                    return $this->redirectToRoute('article_form');
+                    return $this->redirectToRoute('admin');
                 } else {
                     return $this->redirectToRoute('app_index');
                 }

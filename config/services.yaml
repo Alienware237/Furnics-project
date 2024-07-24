@@ -63,6 +63,10 @@ services:
     okpt\furnics\project\Services\Security\CustomAccessDeniedHandler:
         arguments: [ '@router' ]
 
+    okpt\furnics\project\Services\MailService:
+        arguments:
+            $mailer: '@mailer.mailer'
+            $twig: '@twig'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

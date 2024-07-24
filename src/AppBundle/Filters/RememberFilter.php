@@ -35,7 +35,7 @@ class RememberFilter
 
             $user = $this->entityManager->getRepository(User::class)->findOneBy([
                 'rememberKey' => $rememberKey,
-                'username' => $username,
+                'lastName' => $username,
             ]);
 
             if ($user) {

@@ -63,8 +63,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: Cart::class, cascade: ['persist', 'remove'])]
     private Cart $cart;
 
-    #[ORM\OneToOne(mappedBy: 'user', targetEntity: Orders::class, cascade: ["persist", "remove"], orphanRemoval: true)]
-    private Orders $orders;
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Orders::class, cascade: ["persist", "remove"], orphanRemoval: true)]
+    private Collection $orders;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Review::class, cascade: ["persist", "remove"], orphanRemoval: true)]
     private Collection $reviews;
@@ -80,10 +80,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
-        $this->updatedAt = new \DateTime();
+        $this->createdAt = new DateTime();
+        $this->updatedAt = new DateTime();
         $this->reviews = new ArrayCollection();
         $this->comments = new ArrayCollection();
+        $this->orders = new ArrayCollection();
     }
 
     public function getUserId(): ?int
@@ -239,14 +240,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->email;
     }
 
-    public function getCart(): Collection
+    public function getCart(): Cart
     {
         return $this->cart;
     }
 
     public function getOrder(): Collection
     {
-        return $this->order;
+        return $this->orders;
     }
 
     public function getRoles(): array
@@ -288,6 +289,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         if (!$this->reviews->contains($review)) {
             $this->reviews[] = $review;
             $review->setUser($this);
+        }
+        return $this;
+    }
+
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Orders $orders): self
+    {
+        if (!$this->orders->contains($orders)) {
+            $this->orders[] = $orders;
+            $orders->setUser($this);
         }
         return $this;
     }
