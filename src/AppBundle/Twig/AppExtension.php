@@ -25,6 +25,9 @@ class AppExtension extends AbstractExtension
 
     public function averageRating(array $allReviews): float|int
     {
+        if (count($allReviews)<1) {
+            return 0;
+        }
         $sumOfRating = 0;
         for ($i= 0; $i < count($allReviews); $i++) {
             $sumOfRating += $allReviews[$i]->getRating();

@@ -413,4 +413,32 @@ class ArticleController extends AbstractController
         return $this->json(['status' => 'Thank you for your review!'], Response::HTTP_OK);
     }
 
+    #[Route('/update-article-size', name: 'update_article_size', methods: ['POST'])]
+    function updateSize_of_choice(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $size = $data['size'];
+        $cartItemId = $data['cartItemId'];
+
+        $cartItem = $this->entityManager->getRepository(CartItem::class)->find($cartItemId);
+
+        if ($cartItem) {
+            $itemDetail = json_decode($cartItem->getDetailsOfChoice());
+            $itemDetail->size = $size;
+            $cartItem->setDetailsOfChoice(json_encode($itemDetail));
+
+            $this->entityManager->persist($cartItem);
+            $this->entityManager->flush();
+
+
+            return new JsonResponse([
+                'success' => true,
+                'newQuantity' => $cartItem->getDetailsOfChoice()
+            ]);
+        }
+
+        return new JsonResponse(['success' => false]);
+    }
+
 }
