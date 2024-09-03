@@ -31,10 +31,6 @@ class Payment
     #[ORM\JoinColumn(name: 'order_id', referencedColumnName: "order_id", nullable: false)]
     private Orders $order;
 
-    #[ORM\OneToOne(targetEntity: User::class)]
-    #[ORM\JoinColumn(name: 'user_id', referencedColumnName: "user_id", nullable: false)]
-    private ?User $user = null;
-
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private DateTimeInterface $createdAt;

@@ -32,7 +32,8 @@ class CartAddEvent
         return $this->userEmail;
     }
 
-    public function getDetail() {
+    public function getDetail()
+    {
         return $this->detail;
     }
 }

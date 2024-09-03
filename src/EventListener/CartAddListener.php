@@ -71,7 +71,7 @@ final class CartAddListener
             if ($quantity) {
                 $cartItem->setQuantity(intval($quantity));
             } else {
-                $cartItem->setQuantity( 1);
+                $cartItem->setQuantity(1);
             }
         } else {
             if ($quantity) {

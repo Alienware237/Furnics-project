@@ -231,6 +231,7 @@
       <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/composer" />
       <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/psr/log" />
       <path value="$PROJECT_DIR$/vendor/symfony/sendgrid-mailer" />
+      <path value="$PROJECT_DIR$/vendor/paypal/rest-api-sdk-php" />
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1" />

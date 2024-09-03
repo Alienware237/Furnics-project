@@ -18,6 +18,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class createArticleTestCommand extends Command
 {
     private ArticleManager $articleManager;
+    private $article;
 
     public function __construct(
         ArticleManager $articleManager
@@ -71,7 +72,8 @@ class createArticleTestCommand extends Command
             ]
         ];
 
-        $this->articleManager->createArticle('First article', json_encode($articleDetail1), 19.99, 'Category1', json_encode(["uploads/product-item1.jpg"]));
+        $this->article = $this->articleManager->createArticle('First article', json_encode($articleDetail1), 19.99, 'Category1', json_encode(["uploads/product-item1.jpg"]));
+        $this->article;
         $this->articleManager->createArticle('Second article', json_encode($articleDetail2), 17.99, 'Category2', json_encode(["uploads/product-item2.jpg"]));
         $this->articleManager->createArticle('Third article', json_encode($articleDetail3), 18.99, 'Category3', json_encode(["uploads/product-item3.jpg"]));
 

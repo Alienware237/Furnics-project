@@ -1,6 +1,6 @@
 {% block body %}
-
-    <header id="header" class="site-header text-black">
+    <script src="{{ asset('js/index.js') }}"></script>
+    <header id="header" class="site-header text-black" data-app-index="{{ path('app_index') }}">
         <nav id="header-nav" class="navbar navbar-expand-lg px-3 mb-3">
             <div class="container-fluid">
                 <a class="navbar-brand" href="index.html">

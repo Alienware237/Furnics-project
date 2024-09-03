@@ -30,11 +30,14 @@ class OrderSubscriber implements EventSubscriberInterface
         $order = $event->getOrder();
         $transitionName = $order->getNextTransition();
 
+        $this->logger->info("Is possible to transit: ");
+        $this->logger->debug($this->workflow->can($order, $transitionName));
+
         if ($this->workflow->can($order, $transitionName)) {
             $this->workflow->apply($order, $transitionName);
-            $this->logger->info("Order transitioned to: $transitionName");
+            $this->logger->info("Custom Log - Order manually transitioned to: $transitionName for Order ID: " . $order->getOrderId());
         } else {
-            $this->logger->warning("Cannot transition order to: $transitionName");
+            $this->logger->warning("Cannot transition order to: $transitionName from state: " . $order->getCurrentPlace());
         }
     }
 }

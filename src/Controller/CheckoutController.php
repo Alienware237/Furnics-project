@@ -3,6 +3,7 @@
 namespace okpt\furnics\project\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
+use okpt\furnics\project\Entity\Article;
 use okpt\furnics\project\Entity\Orders;
 use okpt\furnics\project\Entity\Payment;
 use okpt\furnics\project\Entity\User;
@@ -34,15 +35,16 @@ class CheckoutController extends AbstractController
     private $addressChecker;
     private $mailService;
 
-    public function __construct(UserManager $userManager,
-                                CartManager $cartManager,
-                                EntityManagerInterface $entityManager,
-                                WorkflowInterface $ordersProcessStateMachine,
-                                LoggerInterface $logger,
-                                EventDispatcherInterface $dispatcher,
-                                AddressChecker $addressChecker,
-                                MailService $mailService)
-    {
+    public function __construct(
+        UserManager $userManager,
+        CartManager $cartManager,
+        EntityManagerInterface $entityManager,
+        WorkflowInterface $ordersProcessStateMachine,
+        LoggerInterface $logger,
+        EventDispatcherInterface $dispatcher,
+        AddressChecker $addressChecker,
+        MailService $mailService
+    ) {
         $this->userManager = $userManager;
         $this->cartManager = $cartManager;
         $this->entityManager = $entityManager;
@@ -184,6 +186,7 @@ class CheckoutController extends AbstractController
 
     private function handleSummary(Request $request): Response
     {
+        //print_r("handleSummary!");
         $user = $this->getUser();
         $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
         $cart = $this->cartManager->getCart($user);
@@ -200,29 +203,37 @@ class CheckoutController extends AbstractController
 
         $this->logger->info('Current order state: ' . $order->getCurrentPlace());
 
+        $quantity = 0;
+        $totalPrice = 0;
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->logger->info('ist not going to place order because of form: ' . $form->isSubmitted() && $form->isValid());
-            $order->setNextTransition('place_order');
-            $this->dispatcher->dispatch(new OrderEvent($order), OrderEvent::NAME);
-            $order->setTotalAmount(0);
-            $this->entityManager->persist($order);
+        foreach ($allCartItems as $item) {
+            $quantity += $item['quantity'];
+            $this->logger->info("Item: ");
+            $this->logger->debug(json_encode($item['article']));
+            $unitPrice = $item['article']->getArticlePrice();
+            $totalPrice += $unitPrice * $item['quantity'];
+        }
 
-            $allArticlesPrices = 0;
-            foreach ($allCartItems as $articleItem) {
-                $articlePrice = $articleItem['article']->getArticlePrice();
-                $allArticlesPrices += ($articlePrice * $articleItem['quantity']);
+        //print_r('$totalPrice: '. $totalPrice);
+
+        if ($form->isSubmitted()) {
+            $this->logger->info("Form was submitted!!!");
+            if ($form->isValid()) {
+                $this->logger->info('ist going to place order because of form!!!');
+                $order->setNextTransition('place_order');
+                $this->dispatcher->dispatch(new OrderEvent($order), OrderEvent::NAME);
+                $order->setTotalAmount($totalPrice);
+                $this->entityManager->persist($order);
+
+                //print_r($order->getCurrentPlace());
+
+                $this->logger->info('Before redirecting to PayPal!!!');
+                return $this->redirectToRoute('app_pay_pal', [
+                    'total' => $order->getTotalAmount(),
+                    'currency' => 'EUR',
+                    'payment_description' => 'You have pay ' . $quantity . ' Articles by Kimpa'
+                ]);
             }
-
-            $payment = new Payment();
-            $payment->setUser($user);
-            $payment->setOrder($order);
-            $payment->setPaymentArt('Paypal');
-            $payment->setAmount($allArticlesPrices);
-
-            $this->entityManager->persist($payment);
-            $this->entityManager->flush();
-            return $this->redirectToRoute('checkout');
         }
 
         return $this->render('checkout/summary.html.twig', [

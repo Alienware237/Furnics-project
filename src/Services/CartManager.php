@@ -54,9 +54,15 @@ class CartManager
 
         foreach ($cartItems as $cartItem) {
             $article = $this->entityManager->getRepository(Article::class)->find($cartItem->getarticle());
-            $allCartItem[] = array("article" => $article, "quantity" => $cartItem->getQuantity(), "detail" => $cartItem->getDetailsOfChoice(), "cartItemId" => $cartItem->getCartItemId());
-        }
 
+            $allCartItem[] = [
+                "article" => $article,
+                "quantity" => $cartItem->getQuantity(),
+                "detail" => $cartItem->getDetailsOfChoice(),
+                "cartItemId" => $cartItem->getCartItemId()
+            ];
+
+        }
         return $allCartItem;
     }
 

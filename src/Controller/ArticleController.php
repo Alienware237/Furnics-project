@@ -323,7 +323,7 @@ class ArticleController extends AbstractController
     }
 
     #[Route('/article-detail/{id}', name: 'article_detail')]
-    function articleDetail($id)
+    public function articleDetail($id)
     {
         $user = $this->getUser();
 
@@ -384,7 +384,7 @@ class ArticleController extends AbstractController
     }
 
     #[Route('/review/new', name: 'article_review', methods: ['POST'])]
-    function addReview(Request $request)
+    public function addReview(Request $request)
     {
         $articleId = $request->request->get('article_id');
         $userPseudo = $request->request->get('name');
@@ -414,7 +414,7 @@ class ArticleController extends AbstractController
     }
 
     #[Route('/update-article-size', name: 'update_article_size', methods: ['POST'])]
-    function updateSize_of_choice(Request $request): JsonResponse
+    public function updateSize_of_choice(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
 

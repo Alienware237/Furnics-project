@@ -18,7 +18,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class MailTest extends Command
 {
-
     private MailService $mailService;
     public function __construct(
         MailService $mailService

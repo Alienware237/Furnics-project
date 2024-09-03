@@ -155,9 +155,10 @@ $(document).ready(function() {
     });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('place-order-button').addEventListener('click', function(event) {
+$(document).ready(function() {
+    // Ensuring the click event is bound only once
+    $('#place-order-button').off('click').on('click', function(event) {
         event.preventDefault();
-        document.getElementById('checkout-form').submit();
+        $('#checkout-form').submit();  // Submitting the form
     });
 });

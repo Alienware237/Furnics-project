@@ -12,6 +12,7 @@ use okpt\furnics\project\Services\Security\AuthenticationService;
 use okpt\furnics\project\Services\UserManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -45,7 +46,7 @@ class IndexController extends AbstractController
         $allArticle = $articleManager->getAllArticles();
     }
     #[Route('/index', name: 'app_index')]
-    public function index(Request $request, UserPasswordHasherInterface $passwordEncoder, AuthenticationUtils $authenticationUtils, SessionInterface $session): Response
+    public function index(Request $request, UserPasswordHasherInterface $passwordEncoder, AuthenticationUtils $authenticationUtils, SessionInterface $session)
     {
         $allArticles = $this->articleManager->getAllArticles();
 
@@ -102,13 +103,21 @@ class IndexController extends AbstractController
                     // Redirect to Admin dashboard
                     return $this->redirectToRoute('admin');
                 }
-
-                //return $this->redirectToRoute('app_index');
+            } else {
+                $this->addFlash('error', 'Invalid credentials');
+                return new JsonResponse(['success' => false, 'message' => 'Invalid credentials']);
             }
         }
         $cart = $this->cartManager->getCart($user);
         if (is_array($cart)) {
-            $cart = $cart[0];
+            if (array_key_exists(0, $cart)) {
+                $cart = $cart[0];
+            } else {
+                $user = $this->createDefaultUser($passwordEncoder);
+                $this->authenticationService->signIn($user, new Response(), false);
+                $session->set('default_user_id', $user->getUserId());
+                $cart = $this->cartManager->getCart($user);
+            }
         }
         $allCartItems = $this->cartManager->getAllCartArticle($cart);
         return $this->render('index/index.html.twig', [
