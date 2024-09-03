@@ -217,7 +217,10 @@
       <excludeFolder url="file://$MODULE_DIR$/tools/php-cs-fixer/vendor/symfony/stopwatch" />
       <excludeFolder url="file://$MODULE_DIR$/tools/php-cs-fixer/vendor/symfony/string" />
       <excludeFolder url="file://$MODULE_DIR$/vendor/symfony/sendgrid-mailer" />
+<<<<<<< HEAD
       <excludeFolder url="file://$MODULE_DIR$/vendor/paypal/rest-api-sdk-php" />
+=======
+>>>>>>> 81c2f77de4f19d374190ed90d5e02a09bf0fba5b
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
