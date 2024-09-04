@@ -17,8 +17,8 @@ class PayPalService
     private ApiContext $apiContext;
     private $logger;
 
-    private $clientId = 'AYutUpGlle1wp3YMkeDKJ432K5TWHEikTNBvFKr_IeUCIgQzI1MKyFEI7mvZFWc4c87ZXY1we-4pKCi5'; //'your-paypal-client-id'
-    private $secret = 'EJJ6BdLSGq5LW5VXFWKLVnnWer1Wise6Q5fX8HN3geG6WT8bcM_X2dKCYwPv390wHc_yyGkbXd_yeh9z'; //'your-paypal-secret'
+    private $clientId = 'your-client-id'; //'your-paypal-client-id'
+    private $secret = 'your-client-secret'; //'your-paypal-secret'
     private $mode = 'sandbox'; // or 'live'
 
     public function __construct(LoggerInterface $log)
