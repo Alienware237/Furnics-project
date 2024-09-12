@@ -17,10 +17,11 @@ class PayPalService
     public function __construct(LoggerInterface $logger)
     {
         $this->clientId = 'your-client-id';
-        $this->secret = 'your-secret';
+        $this->secret = 'your-client-secret';
         $this->mode = 'sandbox'; // or 'live'
         $this->logger = $logger;
         $this->baseUrl = $this->mode === 'sandbox' ? 'https://api.sandbox.paypal.com' : 'https://api.paypal.com';
+
 
         $this->client = new Client([
             'base_uri' => $this->baseUrl,

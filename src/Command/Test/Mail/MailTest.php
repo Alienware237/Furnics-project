@@ -61,3 +61,4 @@ class MailTest extends Command
         return Command::SUCCESS;
     }
 }
+
