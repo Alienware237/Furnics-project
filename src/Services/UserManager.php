@@ -44,16 +44,18 @@ class UserManager
         $this->entityManager->persist($user);
         $this->entityManager->flush();
     }
-    public function createUser(User $user): User
+    public function persistUser(User $user): User
     {
-        $user->setRole('ROLE_USER');
         $orders = $this->ordersManager->createOrder($user);
         $user->addOrder($orders);
         $this->entityManager->persist($user);
         $this->entityManager->persist($orders);
         $this->entityManager->flush();
 
-        $this->cartManager->createCart($user);
+        if (!$user->getCart()) {
+            // ist just for new User
+            $this->cartManager->createCart($user);
+        }
         $this->entityManager->flush();
         return $user;
     }
@@ -78,11 +80,9 @@ class UserManager
     /**
      * @return array|object[]|User[]
      */
-    public function getUserbyEmailAndPassWD(string $email): array|User|null
+    public function getUserbyEmail(string $email): array|User|null
     {
         $users = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
-        $this->logger->info('Just log the finding user!');
-        $this->logger->debug(json_encode($users));
         return $users;
     }
 

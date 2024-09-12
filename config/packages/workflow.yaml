@@ -14,6 +14,7 @@ framework:
         - shopping_cart
         - delivery_address
         - summary_for_purchase
+        - send_mail
         - ordered
       transitions:
         proceed_to_delivery_address:
@@ -22,8 +23,11 @@ framework:
         proceed_to_summary:
           from: delivery_address
           to: summary_for_purchase
-        place_order:
+        proceed_to_send_mail:
           from: summary_for_purchase
+          to: send_mail
+        proceed_to_place_order:
+          from: send_mail
           to: ordered
         back_to_cart:
           from: delivery_address

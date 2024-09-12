@@ -33,7 +33,7 @@ class ThankyouController extends AbstractController
     public function index(): Response
     {
         $user = $this->getUser();
-        $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
+        $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
         $cart = $this->cartManager->getCart($user);
         $cart = is_array($cart) ? $cart[0] : $cart;
 

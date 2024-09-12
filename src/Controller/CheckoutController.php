@@ -14,6 +14,7 @@ use okpt\furnics\project\Services\AddressChecker;
 use okpt\furnics\project\Services\CartManager;
 use okpt\furnics\project\Services\MailService;
 use okpt\furnics\project\Services\UserManager;
+use okpt\furnics\project\Services\OrdersManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -28,6 +29,7 @@ class CheckoutController extends AbstractController
 {
     private $userManager;
     private $cartManager;
+    private $ordersManager;
     private $entityManager;
     private $workflow;
     private $logger;
@@ -38,6 +40,7 @@ class CheckoutController extends AbstractController
     public function __construct(
         UserManager $userManager,
         CartManager $cartManager,
+        OrdersManager $ordersManager,
         EntityManagerInterface $entityManager,
         WorkflowInterface $ordersProcessStateMachine,
         LoggerInterface $logger,
@@ -47,6 +50,7 @@ class CheckoutController extends AbstractController
     ) {
         $this->userManager = $userManager;
         $this->cartManager = $cartManager;
+        $this->ordersManager = $ordersManager;
         $this->entityManager = $entityManager;
         $this->workflow = $ordersProcessStateMachine;
         $this->logger = $logger;
@@ -59,7 +63,7 @@ class CheckoutController extends AbstractController
     {
         $user = $this->getUser();
 
-        $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
+        $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
 
         $cart = $this->cartManager->getCart($user);
         if (is_array($cart)) {
@@ -82,21 +86,13 @@ class CheckoutController extends AbstractController
         if(!$user) {
             return $this->redirectToRoute('app_index');
         }
-        $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
-        $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+        $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
+        $order = $this->ordersManager->getOpenOrder($user) ?? new Orders();
+        $this->logger->info('finding Order: ' . $order->getOrderId());
 
         if (!$order) {
             throw $this->createNotFoundException('Order not found.');
         }
-
-        $form = $this->createForm(SummaryType::class, $order);
-        $form->handleRequest($request);
-
-        $cart = $this->cartManager->getCart($user);
-        if (is_array($cart)) {
-            $cart = $cart[0];
-        }
-        $allCartItems = $this->cartManager->getAllCartArticle($cart);
 
         switch ($order->getCurrentPlace()) {
             case 'shopping_cart':
@@ -106,19 +102,9 @@ class CheckoutController extends AbstractController
                 return $this->redirectToRoute('checkout_delivery_address');
             case 'summary_for_purchase':
                 return $this->handleSummary($request, $order);
-            case 'ordered':
+            case 'send_mail':
                 // Call the mail service to send an email
-                $this->mailService->sendEmail(
-                    $user->getEmail(),
-                    'Order Confirmation',
-                    [
-                        'form' => $form->createView(),
-                        'user' => $user,
-                        'allCartItems' => $allCartItems,
-                        'order' => $order
-                    ]
-                );
-                return $this->redirectToRoute('app_thankyou');
+                return $this->redirectToRoute('app_order_mail');
         }
 
         return new JsonResponse(
@@ -131,14 +117,18 @@ class CheckoutController extends AbstractController
     public function handleDeliveryAddress(Request $request): Response
     {
         $user = $this->getUser();
-        $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
-        $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+        if(!$user) {
+            return $this->redirectToRoute('app_index');
+        }
+        $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
+        $order = $this->ordersManager->getCurrentOrder($user, 'delivery_address') ?? new Orders();
 
         $cart = $this->cartManager->getCart($user);
         $cart = is_array($cart) ? $cart[0] : $cart;
         $allCartItems = $this->cartManager->getAllCartArticle($cart);
 
         if (sizeof($allCartItems) < 1) {
+            $this->logger->info("No Article items found!");
             return $this->redirectToRoute('checkout');
         }
 
@@ -188,11 +178,11 @@ class CheckoutController extends AbstractController
     {
         //print_r("handleSummary!");
         $user = $this->getUser();
-        $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
+        $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
         $cart = $this->cartManager->getCart($user);
         $cart = is_array($cart) ? $cart[0] : $cart;
         $allCartItems = $this->cartManager->getAllCartArticle($cart);
-        $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+        $order = $this->ordersManager->getCurrentOrder($user, 'summary_for_purchase') ?? new Orders();
 
         if (!$order) {
             throw $this->createNotFoundException('Order not found.');
@@ -276,7 +266,7 @@ class CheckoutController extends AbstractController
         // Retrieve or create an Orders entity
         $user = $this->getUser();
 
-        $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
+        $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
         $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
 
         if (!$order) {

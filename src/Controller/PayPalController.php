@@ -5,16 +5,20 @@ namespace okpt\furnics\project\Controller;
 use Doctrine\ORM\EntityManagerInterface;
 use okpt\furnics\project\Entity\Orders;
 use okpt\furnics\project\Entity\Payment as PaymentEntity;
+use okpt\furnics\project\Event\OrderEvent;
 use okpt\furnics\project\Form\SummaryType;
 use okpt\furnics\project\Services\CartManager;
 use okpt\furnics\project\Services\MailService;
 use okpt\furnics\project\Services\Paypal\PayPalService;
 use okpt\furnics\project\Services\UserManager;
+use okpt\furnics\project\Services\OrdersManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class PayPalController extends AbstractController
 {
@@ -23,6 +27,8 @@ class PayPalController extends AbstractController
     private $entityManager;
     private $mailService;
     private $cartManager;
+    private $ordersManager;
+    private $dispatcher;
     private $logger;
 
     public function __construct(
@@ -31,14 +37,18 @@ class PayPalController extends AbstractController
         EntityManagerInterface $entityManager,
         UserManager $userManager,
         CartManager $cartManager,
-        LoggerInterface $logger
+        OrdersManager $ordersManager,
+        LoggerInterface $logger,
+        EventDispatcherInterface $dispatcher
     ) {
         $this->paypalService = $paypalService;
         $this->mailService = $mailService;
         $this->entityManager = $entityManager;
         $this->userManager = $userManager;
         $this->cartManager = $cartManager;
+        $this->ordersManager = $ordersManager;
         $this->logger = $logger;
+        $this->dispatcher = $dispatcher;
     }
 
     #[Route('/pay/pal', name: 'app_pay_pal')]
@@ -46,48 +56,42 @@ class PayPalController extends AbstractController
     {
         $this->logger->info("Initiating PayPal payment");
 
-        $totalAmount = $request->query->get('total', 0);
+        $totalAmount = $request->query->get('total', 1);
         $currency = $request->query->get('currency', 'USD');
         $paymentDescription = $request->query->get('payment_description', 'Payment for Order');
 
         try {
             // Generate absolute URLs for success and cancel
-            $successUrl = $this->generateUrl('payment_success');
-            $cancelUrl = $this->generateUrl('payment_cancel');
+            $successUrl = $this->generateUrl('payment_success', [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $cancelUrl = $this->generateUrl('payment_cancel', [], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $this->logger->debug('$successUrl: '.'http://localhost:8094'. $successUrl);
-            $this->logger->debug('$cancelUrl: '.'http://localhost:8094'. $cancelUrl);
 
-            // Create PayPal payment with correct URLs
+            // Create PayPal payment
             $payment = $this->paypalService->createPayment(
-                $totalAmount,
+                1.0,
                 $currency,
                 $paymentDescription,
-                'http://localhost:8094'. $successUrl,
-                'http://localhost:8094'. $cancelUrl
+                $successUrl,
+                $cancelUrl
             );
 
-            // Log the entire PayPal payment object for troubleshooting
-            $this->logger->info('PayPal Payment created', [
-                'payment_id' => $payment->getId(),
-                'status' => $payment->getState(),
-                'approval_link' => $payment->getApprovalLink()
-            ]);
-
-            // Ensure the approval link is generated properly
-            $approvalLink = $payment->getApprovalLink();
-            if (!$approvalLink) {
-                throw new \Exception('Approval link not found in PayPal response.');
+            // Retrieve approval link
+            foreach ($payment['links'] as $link) {
+                if ($link['rel'] === 'approval_url') {
+                    $this->logger->info('redirect to approval url');
+                    $this->logger->info($link['href']);
+                    return $this->redirect($link['href']);
+                }
             }
 
-            return $this->redirect($approvalLink);
+            throw new \Exception('Approval link not found in PayPal response.');
         } catch (\Exception $e) {
             $this->logger->error('PayPal payment initiation failed: ' . $e->getMessage());
             return $this->redirectToRoute('payment_cancel');
         }
     }
 
-    #[Route("/payment-success", name:'payment_success')]
+    #[Route("/payment-success", name: 'payment_success')]
     public function paymentSuccess(Request $request): Response
     {
         $paymentId = $request->query->get('paymentId');
@@ -99,7 +103,10 @@ class PayPalController extends AbstractController
         }
 
         try {
-            $payment = $this->paypalService->executePayment($paymentId, $payerId);
+            // Execute the payment
+            $this->paypalService->executePayment($paymentId, $payerId);
+
+            // Handle successful payment logic
             $this->logger->info('PayPal payment executed successfully.');
 
             $user = $this->getUser();
@@ -109,8 +116,8 @@ class PayPalController extends AbstractController
                 return $this->redirectToRoute('app_index');
             }
 
-            $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
-            $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+            $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
+            $order = $this->ordersManager->getCurrentOrder($user, 'summary_for_purchase') ?? new Orders();
 
             // Recalculate total from the cart
             $cart = $this->cartManager->getCart($user);
@@ -132,10 +139,14 @@ class PayPalController extends AbstractController
                 ->setAmount($allArticlesPrices);
 
             $this->entityManager->persist($paymentEntity);
+            $order->setNextTransition('proceed_to_send_mail');
+            $this->dispatcher->dispatch(new OrderEvent($order), OrderEvent::NAME);
             $this->entityManager->flush();
+
 
             $this->logger->info("Payment and order successfully recorded.");
 
+            // Redirect to checkout or order confirmation
             return $this->redirectToRoute('checkout');
         } catch (\Exception $e) {
             $this->logger->error('Payment execution failed: ' . $e->getMessage());
