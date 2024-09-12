@@ -7,11 +7,9 @@
     <option name="transferred" value="true" />
   </component>
   <component name="PHPCodeSnifferOptionsConfiguration">
-    <option name="codingStandard" value="Custom" />
-    <option name="customRuleset" value="$PROJECT_DIR$/phpcs.xml.dist" />
     <option name="highlightLevel" value="WARNING" />
     <option name="transferred" value="true" />
-  </component>
+  </component> 
   <component name="PhpCodeSniffer">
     <phpcs_settings>
       <PhpCSConfiguration beautifier_path="$PROJECT_DIR$/vendor/bin/phpcbf" tool_path="$PROJECT_DIR$/vendor/bin/phpcs" />
@@ -231,23 +229,12 @@
       <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/composer" />
       <path value="$PROJECT_DIR$/tools/php-cs-fixer/vendor/psr/log" />
       <path value="$PROJECT_DIR$/vendor/symfony/sendgrid-mailer" />
-<<<<<<< HEAD
-<<<<<<< HEAD
       <path value="$PROJECT_DIR$/vendor/paypal/rest-api-sdk-php" />
-=======
->>>>>>> 81c2f77de4f19d374190ed90d5e02a09bf0fba5b
-=======
->>>>>>> 81c2f77de4f19d374190ed90d5e02a09bf0fba5b
     </include_path>
   </component>
   <component name="PhpProjectSharedConfiguration" php_language_level="8.1" />
   <component name="PhpStanOptionsConfiguration">
     <option name="transferred" value="true" />
-  </component>
-  <component name="PhpUnit">
-    <phpunit_settings>
-      <PhpUnitSettings configuration_file_path="$PROJECT_DIR$/phpunit.xml.dist" custom_loader_path="$PROJECT_DIR$/vendor/autoload.php" use_configuration_file="true" />
-    </phpunit_settings>
   </component>
   <component name="PsalmOptionsConfiguration">
     <option name="transferred" value="true" />

@@ -138,6 +138,7 @@ class IndexController extends AbstractController
         $defaultEmail = $prefix . '@example.com';
         $defaultPassword = bin2hex(random_bytes(10));
 
+        $user->setRole('ROLE_USER');
         $user->setEmail($defaultEmail);
         $user->setFirstName($prefix . 'Firstname');
         $user->setLastName($prefix . 'Lastname');
@@ -150,6 +151,6 @@ class IndexController extends AbstractController
         $user->setPhone('');
         $user->setPassword($passwordEncoder->hashPassword($user, $defaultPassword));
 
-        return $this->userManager->createUser($user);
+        return $this->userManager->persistUser($user);
     }
 }

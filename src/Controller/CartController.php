@@ -9,6 +9,7 @@ use okpt\furnics\project\Event\CartAddEvent;
 use okpt\furnics\project\Event\OrderEvent;
 use okpt\furnics\project\Services\CartManager;
 use okpt\furnics\project\Services\UserManager;
+use okpt\furnics\project\Services\OrdersManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -25,17 +26,26 @@ class CartController extends AbstractController
 {
     private $userManager;
     private $cartManager;
-
+    private $ordersManager;
     private $entityManager;
     private $logger;
     private $eventDispatcher;
     private $csrfTokenManager;
     private $workflow;
 
-    public function __construct(UserManager $userManager, CartManager $cartManager, EntityManagerInterface $entityManager, LoggerInterface $logger, CsrfTokenManagerInterface $csrfTokenManager, EventDispatcherInterface $eventDispatcher, WorkflowInterface $ordersProcessStateMachine)
-    {
+    public function __construct(
+        UserManager $userManager,
+        CartManager $cartManager,
+        OrdersManager $ordersManager,
+        EntityManagerInterface $entityManager,
+        LoggerInterface $logger,
+        CsrfTokenManagerInterface $csrfTokenManager,
+        EventDispatcherInterface $eventDispatcher,
+        WorkflowInterface $ordersProcessStateMachine
+    ) {
         $this->userManager = $userManager;
         $this->cartManager = $cartManager;
+        $this->ordersManager = $ordersManager;
         $this->entityManager = $entityManager;
         $this->logger = $logger;
         $this->csrfTokenManager = $csrfTokenManager;
@@ -49,7 +59,7 @@ class CartController extends AbstractController
         $lastUsername = $authenticationUtils->getLastUsername();
         $user = $this->getUser();
 
-        $user = $this->userManager->getUserbyEmailAndPassWD($user->getUserIdentifier());
+        $user = $this->userManager->getUserbyEmail($user->getUserIdentifier());
 
         if (in_array('ROLE_ADMIN', $user->getRoles())) {
             // Redirect to Admin dashboard
@@ -61,7 +71,7 @@ class CartController extends AbstractController
 
         $allCartItems = $this->cartManager->getAllCartArticle($cart);
 
-        $order = $this->entityManager->getRepository(Orders::class)->findOneBy(['user' => $user]) ?? new Orders();
+        $order = $order = $this->ordersManager->getCurrentOrder($user, 'shopping_cart') ?? new Orders();
 
         if (!$order) {
             throw $this->createNotFoundException('Order not found.');

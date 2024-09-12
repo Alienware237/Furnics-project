@@ -2,103 +2,118 @@
 
 namespace okpt\furnics\project\Services\Paypal;
 
-use PayPal\Api\Payer;
-use PayPal\Api\Amount;
-use PayPal\Api\Transaction;
-use PayPal\Api\Payment;
-use PayPal\Api\PaymentExecution;
-use PayPal\Api\RedirectUrls;
-use PayPal\Auth\OAuthTokenCredential;
-use PayPal\Rest\ApiContext;
+use GuzzleHttp\Client;
 use Psr\Log\LoggerInterface;
 
 class PayPalService
 {
-    private ApiContext $apiContext;
+    private $client;
+    private $clientId;
+    private $secret;
+    private $mode;
     private $logger;
+    private $baseUrl;
 
-    private $clientId = 'your-client-id'; //'your-paypal-client-id'
-    private $secret = 'your-client-secret'; //'your-paypal-secret'
-    private $mode = 'sandbox'; // or 'live'
-
-    public function __construct(LoggerInterface $log)
+    public function __construct(LoggerInterface $logger)
     {
-        $this->apiContext = new ApiContext(
-            new OAuthTokenCredential($this->clientId, $this->secret)
-        );
-        $this->apiContext->setConfig(['mode' => $this->mode]);
-        $this->logger = $log;
+        $this->clientId = 'your-client-id';
+        $this->secret = 'your-client-secret';
+        $this->mode = 'sandbox'; // or 'live'
+        $this->logger = $logger;
+        $this->baseUrl = $this->mode === 'sandbox' ? 'https://api.sandbox.paypal.com' : 'https://api.paypal.com';
+
+
+        $this->client = new Client([
+            'base_uri' => $this->baseUrl,
+        ]);
     }
 
-    public function createPayment(float $total, string $currency, string $paymentDescription, string $successUrl, string $cancelUrl): Payment
+    private function getAccessToken(): string
     {
-        $payer = new Payer();
-        $payer->setPaymentMethod('paypal');
-
-        $amount = new Amount();
-        $amount->setTotal(number_format($total, 2, '.', ''))
-            ->setCurrency($currency);
-
-        $transaction = new Transaction();
-        $transaction->setAmount($amount)
-            ->setDescription($paymentDescription);
-
-        $redirectUrls = new RedirectUrls();
-        $redirectUrls->setReturnUrl($successUrl)
-            ->setCancelUrl($cancelUrl);
-
-        $payment = new Payment();
-        $payment->setIntent('sale')
-            ->setPayer($payer)
-            ->setTransactions([$transaction])
-            ->setRedirectUrls($redirectUrls);
-
-        // Log important details
-        $this->logger->info('Creating PayPal payment', [
-            'method' => $payer->getPaymentMethod(),
-            'amount' => $amount->getTotal(),
-            'currency' => $amount->getCurrency(),
-            'description' => $paymentDescription,
-            'success_url' => $successUrl,
-            'cancel_url' => $cancelUrl
-        ]);
-
         try {
-            print_r($payment);
-            // Log the data before calling the PayPal SDK
-            $this->logger->info('Payment object before creating PayPal payment', [
-                'payment' => $payment->toArray()
+            $response = $this->client->post('/v1/oauth2/token', [
+                'auth' => [$this->clientId, $this->secret],
+                'form_params' => [
+                    'grant_type' => 'client_credentials'
+                ]
             ]);
 
-            print_r($this->apiContext);
-            // Create the payment
-            $payment->create($this->apiContext);
-        } catch (\PayPal\Exception\PayPalConnectionException $ex) {
-            $this->logger->error('PayPal Connection Exception: ' . $ex->getMessage());
-            $this->logger->error('PayPal Response Data: ' . $ex->getData());
-            throw new \Exception("Payment creation failed: " . $ex->getMessage());
-        } catch (\Exception $ex) {
-            $this->logger->error('Payment creation failed: ' . $ex->getMessage());
-            throw new \Exception("Payment creation failed: " . $ex->getMessage());
-        }
+            $data = json_decode($response->getBody(), true);
 
-        return $payment;
+            if (!isset($data['access_token'])) {
+                throw new \Exception('Failed to retrieve access token from PayPal.');
+            }
+
+            return $data['access_token'];
+        } catch (\Exception $e) {
+            $this->logger->error('Failed to get access token: ' . $e->getMessage());
+            throw $e;
+        }
     }
 
-    public function executePayment(string $paymentId, string $payerId): Payment
+    public function createPayment(float $total, string $currency, string $paymentDescription, string $successUrl, string $cancelUrl): array
     {
+        $accessToken = $this->getAccessToken();
+
+        $paymentData = [
+            'intent' => 'sale',
+            'payer' => [
+                'payment_method' => 'paypal'
+            ],
+            'transactions' => [[
+                'amount' => [
+                    'total' => number_format($total, 2, '.', ''),
+                    'currency' => $currency
+                ],
+                'description' => $paymentDescription
+            ]],
+            'redirect_urls' => [
+                'return_url' => $successUrl,
+                'cancel_url' => $cancelUrl
+            ]
+        ];
+
         try {
-            $payment = Payment::get($paymentId, $this->apiContext);
-            $execution = new PaymentExecution();
-            $execution->setPayerId($payerId);
-            return $payment->execute($execution, $this->apiContext);
-        } catch (\PayPal\Exception\PayPalConnectionException $ex) {
-            $this->logger->error('PayPal Connection Exception during execution: ' . $ex->getMessage());
-            $this->logger->error('PayPal Response Data: ' . $ex->getData());
-            throw new \Exception("Payment execution failed: " . $ex->getMessage());
-        } catch (\Exception $ex) {
-            $this->logger->error('Payment execution failed: ' . $ex->getMessage());
-            throw new \Exception("Payment execution failed: " . $ex->getMessage());
+            $response = $this->client->post('/v1/payments/payment', [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => $paymentData
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            $this->logger->info('PayPal payment created successfully', $data);
+
+            return $data;
+        } catch (\Exception $e) {
+            $this->logger->error('Payment creation failed: ' . $e->getMessage());
+            throw $e;
+        }
+    }
+
+    public function executePayment(string $paymentId, string $payerId): array
+    {
+        $accessToken = $this->getAccessToken();
+
+        try {
+            $response = $this->client->post("/v1/payments/payment/{$paymentId}/execute", [
+                'headers' => [
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Content-Type' => 'application/json',
+                ],
+                'json' => [
+                    'payer_id' => $payerId
+                ]
+            ]);
+
+            $data = json_decode($response->getBody(), true);
+            $this->logger->info('Payment executed successfully', $data);
+
+            return $data;
+        } catch (\Exception $e) {
+            $this->logger->error('Payment execution failed: ' . $e->getMessage());
+            throw $e;
         }
     }
 }

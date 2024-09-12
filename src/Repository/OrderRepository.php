@@ -3,6 +3,8 @@
 namespace okpt\furnics\project\Repository;
 
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\ORM\Query\Parameter;
 use Doctrine\Persistence\ManagerRegistry;
 use okpt\furnics\project\Entity\Orders;
 
@@ -45,4 +47,28 @@ class OrderRepository extends ServiceEntityRepository
     //            ->getOneOrNullResult()
     //        ;
     //    }
+
+    public function findCurrentOrder($user, $currentPlace): ?Orders
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.user = :u')
+            ->andWhere('o.currentPlace = :cPl')
+            ->setParameter('u', $user)
+            ->setParameter('cPl', $currentPlace)
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
+
+    public function findOpenOder($user): ?Orders
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.user = :u')
+            ->andWhere('o.currentPlace != :cPl')
+            ->setParameter('u', $user)
+            ->setParameter('cPl', 'ordered')
+            ->getQuery()
+            ->getOneOrNullResult()
+        ;
+    }
 }

@@ -13,15 +13,8 @@
     <script src="{{ asset('js/user-cart.js') }}"></script>
 {% endblock %}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     <div class="site-wrap shopping-cart-page" data-update-url="{{ path('update_article_quantity') }}" data-remove-url="{{ path('remove_article') }}" data-update-size="{{ path('update_article_size') }}">
-=======
-    <div class="site-wrap shopping-cart-page"  data-update-url="{{ path('update_article_quantity') }}" data-remove-url="{{ path('remove_article') }}" data-update-size="{{ path('update_article_size') }}">
->>>>>>> 81c2f77de4f19d374190ed90d5e02a09bf0fba5b
-=======
-    <div class="site-wrap shopping-cart-page"  data-update-url="{{ path('update_article_quantity') }}" data-remove-url="{{ path('remove_article') }}" data-update-size="{{ path('update_article_size') }}">
->>>>>>> 81c2f77de4f19d374190ed90d5e02a09bf0fba5b
+
         {% include 'header/header2.html.twig' with {'user' : user, 'allCartItems' : allCartItems} %}
 
         <div class="bg-light py-3">
