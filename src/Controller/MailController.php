@@ -75,7 +75,7 @@ class MailController extends AbstractController
 
         // Remove all Items in the cart and create a new order for this user
         $this->cartItemManager->removeAllCartItem($cart);
-        $this->userManager->persistUser($user);
+        $this->userManager->newOrder($user);
 
         return $this->redirectToRoute('app_thankyou');
     }

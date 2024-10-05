@@ -44,7 +44,7 @@ class UserManager
         $this->entityManager->persist($user);
         $this->entityManager->flush();
     }
-    public function persistUser(User $user): User
+    public function newOrder(User $user): User
     {
         $orders = $this->ordersManager->createOrder($user);
         $user->addOrder($orders);
@@ -52,10 +52,13 @@ class UserManager
         $this->entityManager->persist($orders);
         $this->entityManager->flush();
 
-        if (!$user->getCart()) {
-            // ist just for new User
-            $this->cartManager->createCart($user);
-        }
+        return $user;
+    }
+
+    public function newCard(User $user)
+    {
+        // ist just for new User
+        $this->cartManager->createCart($user);
         $this->entityManager->flush();
         return $user;
     }

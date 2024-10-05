@@ -151,6 +151,7 @@ class IndexController extends AbstractController
         $user->setPhone('');
         $user->setPassword($passwordEncoder->hashPassword($user, $defaultPassword));
 
-        return $this->userManager->persistUser($user);
+        $this->userManager->newOrder($user);
+        return $this->userManager->newCard($user);
     }
 }

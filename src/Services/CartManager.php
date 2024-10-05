@@ -28,6 +28,7 @@ class CartManager
         $cart = new Cart();
         $cart->setUser($user);
 
+        $this->logger->info('the createCard function was accessed!');
         $this->cartManager->persist($cart);
         $this->cartManager->flush();
     }
